@@ -108,7 +108,11 @@ $products = $pdo->query("SELECT p.*, c.category_name FROM products p LEFT JOIN c
             <?php foreach ($products as $p): ?>
             <div class="product-card">
                 <div class="product-img">
-                    <i class="fas fa-guitar"></i>
+                    <?php if ($p['image']): ?>
+                        <img src="assets/images/products/<?php echo $p['image']; ?>" alt="<?php echo $p['product_name']; ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php else: ?>
+                        <i class="fas fa-guitar"></i>
+                    <?php endif; ?>
                 </div>
                 <div class="product-info">
                     <div class="product-cat"><?php echo $p['category_name']; ?></div>

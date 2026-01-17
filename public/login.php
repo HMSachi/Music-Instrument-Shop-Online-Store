@@ -146,6 +146,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="error-msg"><?php echo $error; ?></div>
         <?php endif; ?>
 
+        <?php if (isset($_SESSION['signup_success'])): ?>
+            <div class="success-msg" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; text-align: center; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <?php 
+                    echo $_SESSION['signup_success']; 
+                    unset($_SESSION['signup_success']);
+                ?>
+            </div>
+        <?php endif; ?>
+
         <form method="POST">
             <div class="form-group">
                 <label for="email">Email Address</label>
@@ -157,6 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <button type="submit" class="btn-login">Sign In</button>
         </form>
+
+        <div class="signup-link" style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+            Don't have an account? <a href="signup.php" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign Up</a>
+        </div>
     </div>
 </body>
 </html>

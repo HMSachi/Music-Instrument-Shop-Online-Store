@@ -113,9 +113,9 @@ $products = $pdo->query("SELECT p.*, c.category_name FROM products p LEFT JOIN c
     <div class="main-content">
         <div class="header">
             <h1>Inventory Management</h1>
-            <button class="btn btn-primary" onclick="openModal()">
+            <a href="add_product.php" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add Product
-            </button>
+            </a>
         </div>
 
         <div class="card">

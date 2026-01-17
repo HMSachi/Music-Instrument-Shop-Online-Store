@@ -217,8 +217,13 @@ $recent_orders = $pdo->query("SELECT o.*, u.full_name FROM orders o JOIN users u
     <div class="main-content">
         <div class="header">
             <h1>Dashboard Overview</h1>
-            <div class="user-profile">
-                <span>Welcome, <strong><?php echo $_SESSION['full_name']; ?></strong></span>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <a href="add_product.php" class="nav-item" style="background: var(--primary); color: white; margin-bottom: 0;">
+                    <i class="fas fa-plus"></i> Add Product
+                </a>
+                <div class="user-profile">
+                    <span>Welcome, <strong><?php echo $_SESSION['full_name']; ?></strong></span>
+                </div>
             </div>
         </div>
 
