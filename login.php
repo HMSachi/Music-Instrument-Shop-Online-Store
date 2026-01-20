@@ -1,30 +1,27 @@
 <?php
-include 'includes/db_connection.php';
-include 'includes/auth.php';
+require_once __DIR__ . '/includes/db_connection.php';
+require_once __DIR__ . '/includes/session.php';
+require_once __DIR__ . '/includes/auth.php';
 
+$base = BASE_PATH;
 $error = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $auth = new AuthHandler($db);
-    $result = $auth->login($_POST['email'], $_POST['password']);
-    
+    $result = $auth->login($_POST['email'] ?? '', $_POST['password'] ?? '');
     if ($result['success']) {
-        $redirect_url = '/index.php';
-        
+        $redirect = $base . '/index.php';
         if ($_SESSION['role'] === 'admin') {
-            $redirect_url = '/admin/dashboard.php';
+            $redirect = $base . '/admin/dashboard.php';
         } elseif ($_SESSION['role'] === 'staff') {
-            $redirect_url = '/staff/dashboard.php';
+            $redirect = $base . '/staff/dashboard.php';
         } elseif ($_SESSION['role'] === 'customer') {
-            $redirect_url = '/customer/dashboard.php';
+            $redirect = $base . '/customer/dashboard.php';
         }
-        
-        header("Location: $redirect_url");
+        header('Location: ' . $redirect);
         exit();
-    } else {
-        $error = $result['message'];
     }
+    $error = $result['message'];
 }
 ?>
 <!DOCTYPE html>
@@ -33,12 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Melody Masters</title>
-    <link rel="stylesheet" href="/Music-Instrument-Shop-Online-Store/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/style.css">
 </head>
 <body>
     <header>
         <nav class="container">
-            <a href="/index.php" class="logo">🎵 Melody Masters</a>
+            <a href="<?php echo $base; ?>/index.php" class="logo">Melody Masters</a>
         </nav>
     </header>
 
@@ -46,27 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div style="max-width: 500px; margin: 3rem auto;">
             <div class="card">
                 <h1 class="text-center mb-3">Login to Your Account</h1>
-                
                 <?php if ($error): ?>
                     <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
-                
                 <form method="POST" action="">
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" id="email" name="email" required>
                     </div>
-                    
                     <div class="form-group">
                         <label for="password">Password</label>
                         <input type="password" id="password" name="password" required>
                     </div>
-                    
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
                 </form>
-                
                 <p class="text-center mt-3">
-                    Don't have an account? <a href="/signup.php">Sign up here</a>
+                    Don't have an account? <a href="<?php echo $base; ?>/signup.php">Sign up here</a>
                 </p>
             </div>
         </div>
