@@ -7,31 +7,18 @@ require_admin();
 
 $base = BASE_PATH;
 $pm = new ProductManager($db);
-
-if (!isset($_GET['id'])) {
-    header('Location: ' . $base . '/admin/dashboard.php');
-    exit();
-}
-
-$product = $pm->get_product((int) $_GET['id']);
-if (!$product) {
-    header('Location: ' . $base . '/admin/dashboard.php');
-    exit();
-}
-
 $categories = $pm->get_categories();
 $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $result = $pm->update_product($product['product_id'], $_POST);
+    $result = $pm->add_product($_POST);
     if ($result['success']) {
         $success = $result['message'];
-        // Refresh product data
-        $product = $pm->get_product($product['product_id']);
-    } else {
-        $error = $result['message'];
+        header('Location: ' . $base . '/admin/dashboard.php');
+        exit();
     }
+    $error = $result['message'];
 }
 ?>
 <!DOCTYPE html>
@@ -39,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product - Melody Masters</title>
+    <title>Add Product - Melody Masters</title>
     <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/style.css">
 </head>
 <body>
@@ -55,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <main class="container">
         <div style="max-width: 700px; margin: 2rem auto;">
-            <h1>Edit Product</h1>
+            <h1>Add New Product</h1>
             <?php if ($error): ?>
                 <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
             <?php endif; ?>
@@ -67,48 +54,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="POST" action="">
                     <div class="form-group">
                         <label for="product_name">Product Name *</label>
-                        <input type="text" id="product_name" name="product_name" value="<?php echo htmlspecialchars($product['product_name']); ?>" required>
+                        <input type="text" id="product_name" name="product_name" required>
                     </div>
                     <div class="form-group">
                         <label for="brand">Brand</label>
-                        <input type="text" id="brand" name="brand" value="<?php echo htmlspecialchars($product['brand']); ?>">
+                        <input type="text" id="brand" name="brand">
                     </div>
                     <div class="form-group">
                         <label for="category_id">Category</label>
                         <select id="category_id" name="category_id">
                             <option value="">Select Category</option>
                             <?php foreach ($categories as $cat): ?>
-                                <option value="<?php echo $cat['category_id']; ?>" <?php echo ($cat['category_id'] == $product['category_id']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($cat['category_name']); ?>
-                                </option>
+                                <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="4"><?php echo htmlspecialchars($product['description']); ?></textarea>
+                        <textarea id="description" name="description" rows="4"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="price">Price *</label>
-                        <input type="number" id="price" name="price" step="0.01" min="0" value="<?php echo $product['price']; ?>" required>
+                        <input type="number" id="price" name="price" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
                         <label for="stock">Stock Quantity</label>
-                        <input type="number" id="stock" name="stock" min="0" value="<?php echo (int)$product['stock']; ?>">
+                        <input type="number" id="stock" name="stock" min="0" value="0">
                     </div>
                     <div class="form-group">
                         <label for="product_type">Product Type *</label>
                         <select id="product_type" name="product_type" required>
-                            <option value="physical" <?php echo ($product['product_type'] === 'physical') ? 'selected' : ''; ?>>Physical</option>
-                            <option value="digital" <?php echo ($product['product_type'] === 'digital') ? 'selected' : ''; ?>>Digital</option>
+                            <option value="physical">Physical</option>
+                            <option value="digital">Digital</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="image">Image Filename</label>
-                        <input type="text" id="image" name="image" value="<?php echo htmlspecialchars($product['image']); ?>">
+                        <input type="text" id="image" name="image" placeholder="e.g., product.jpg">
                     </div>
                     <div style="display: flex; gap: 1rem;">
-                        <button type="submit" class="btn btn-primary">Update Product</button>
+                        <button type="submit" class="btn btn-primary">Add Product</button>
                         <a href="<?php echo $base; ?>/admin/dashboard.php" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>

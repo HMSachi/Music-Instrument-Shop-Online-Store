@@ -1,44 +1,35 @@
 <?php
-/**
- * Database Connection Handler
- * Manages connection to MySQL database
- */
-
-$host = 'localhost';
-$dbname = 'melody_masters';
-$username = 'root';
-$password = '';
-
-try {
-    $db = new mysqli($host, $username, $password, $dbname);
-    
-    if ($db->connect_error) {
-        die("Connection failed: " . $db->connect_error);
-    }
-    
-    // Set charset to utf8
-    $db->set_charset("utf8mb4");
-    
-} catch (Exception $e) {
-    die("Database connection error: " . $e->getMessage());
+// Database connection settings (adjust if your MySQL credentials differ)
+if (!defined('DB_HOST')) {
+    define('DB_HOST', 'localhost');
+}
+if (!defined('DB_USER')) {
+    define('DB_USER', 'root');
+}
+if (!defined('DB_PASS')) {
+    define('DB_PASS', '');
+}
+if (!defined('DB_NAME')) {
+    define('DB_NAME', 'melody_masters');
 }
 
-// Helper function to escape input
-function sanitize_input($input) {
-    global $db;
-    return mysqli_real_escape_string($db, trim($input));
+// Create mysqli connection
+$db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+if ($db->connect_errno) {
+    die('Database connection failed: ' . $db->connect_error);
 }
 
-// Helper function to validate email
+// Basic helpers used across the app
+function sanitize_input($value) {
+    return trim($value ?? '');
+}
+
 function is_valid_email($email) {
-    return filter_var($email, FILTER_VALIDATE_EMAIL);
+    return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
-// Helper function to check password strength
 function is_strong_password($password) {
-    return strlen($password) >= 8 && 
-           preg_match('/[A-Z]/', $password) && 
-           preg_match('/[0-9]/', $password);
+    // At least 8 chars, one uppercase, one digit
+    return (bool) preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $password);
 }
-
 ?>
