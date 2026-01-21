@@ -21,7 +21,8 @@ $featured = array_slice($products, 0, 6);
         <nav class="container">
             <a href="<?php echo $base; ?>/index.php" class="logo">Melody Masters</a>
             <ul class="nav-links">
-                <li><a href="<?php echo $base; ?>/products.php">Products</a></li>
+                <li><a href="<?php echo $base; ?>/products_store.php">🛒 Shop</a></li>
+                <li><a href="<?php echo $base; ?>/products.php">Browse</a></li>
                 <?php if (is_logged_in()): ?>
                     <?php if (has_role('admin')): ?>
                         <li><a href="<?php echo $base; ?>/admin/dashboard.php">Admin</a></li>
@@ -45,7 +46,7 @@ $featured = array_slice($products, 0, 6);
             <h1>Your Music. Your Gear.</h1>
             <p>Browse instruments, studio essentials, and digital downloads curated for musicians.</p>
             <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a class="btn btn-primary" href="<?php echo $base; ?>/products.php">Shop Now</a>
+                <a class="btn btn-primary" href="<?php echo $base; ?>/products_store.php">🛒 Start Shopping</a>
                 <?php if (!is_logged_in()): ?>
                     <a class="btn btn-secondary" href="<?php echo $base; ?>/signup.php">Create Account</a>
                 <?php else: ?>

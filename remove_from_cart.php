@@ -6,13 +6,20 @@ require_customer();
 
 $base = BASE_PATH;
 
+// Accept both GET and POST for flexibility
+$product_id = null;
 if (isset($_GET['id'])) {
     $product_id = (int)$_GET['id'];
-    if (isset($_SESSION['cart'][$product_id])) {
-        unset($_SESSION['cart'][$product_id]);
-    }
+} elseif (isset($_POST['product_id'])) {
+    $product_id = (int)$_POST['product_id'];
 }
 
-header('Location: ' . $base . '/cart.php');
+if ($product_id && isset($_SESSION['cart'][$product_id])) {
+    unset($_SESSION['cart'][$product_id]);
+}
+
+// Redirect back to referring page or cart
+$redirect = $_POST['referrer'] ?? $_GET['referrer'] ?? $base . '/cart.php';
+header('Location: ' . $redirect);
 exit();
 ?>
