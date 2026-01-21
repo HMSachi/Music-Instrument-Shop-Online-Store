@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($_SESSION['role'] === 'staff') {
             $redirect = $base . '/staff/dashboard.php';
         } elseif ($_SESSION['role'] === 'customer') {
-            $redirect = $base . '/customer/dashboard.php';
+            $redirect = $base . '/products_store.php';
         }
         header('Location: ' . $redirect);
         exit();
