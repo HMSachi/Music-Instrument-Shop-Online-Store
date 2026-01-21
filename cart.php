@@ -3,7 +3,8 @@ require_once __DIR__ . '/includes/db_connection.php';
 require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/product_manager.php';
 
-require_customer();
+// Allow viewing cart without login, but checkout requires login
+// require_customer();
 
 $base = BASE_PATH;
 $pm = new ProductManager($db);
@@ -147,8 +148,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                         <span>Total:</span>
                         <span style="color: var(--accent);">$<?php echo number_format($total, 2); ?></span>
                     </div>
-                    <a href="<?php echo $base; ?>/checkout.php" class="btn btn-primary" style="display: block; text-align: center; width: 100%; padding: 0.75rem;">Proceed to Checkout</a>
-                    <a href="<?php echo $base; ?>/products.php" class="btn btn-secondary" style="display: block; text-align: center; width: 100%; padding: 0.75rem; margin-top: 0.75rem;">Continue Shopping</a>
+                    <?php if (is_logged_in()): ?>
+                        <a href="<?php echo $base; ?>/checkout.php" class="btn btn-primary" style="display: block; text-align: center; width: 100%; padding: 0.75rem;">Proceed to Checkout</a>
+                    <?php else: ?>
+                        <a href="<?php echo $base; ?>/login.php" class="btn btn-primary" style="display: block; text-align: center; width: 100%; padding: 0.75rem;">Login to Checkout</a>
+                    <?php endif; ?>
+                    <a href="<?php echo $base; ?>/products_store.php" class="btn btn-secondary" style="display: block; text-align: center; width: 100%; padding: 0.75rem; margin-top: 0.75rem;">Continue Shopping</a>
                 </div>
             </div>
         <?php endif; ?>

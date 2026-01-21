@@ -2,7 +2,8 @@
 require_once __DIR__ . '/includes/db_connection.php';
 require_once __DIR__ . '/includes/session.php';
 
-require_customer();
+// Allow any user (logged in or not) to add to cart
+// But redirect to login if they want to checkout
 
 $base = BASE_PATH;
 
