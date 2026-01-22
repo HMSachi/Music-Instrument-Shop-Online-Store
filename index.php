@@ -43,15 +43,28 @@ $featured = array_slice($products, 0, 6);
 
     <main class="container">
         <section class="hero">
-            <h1>Your Music. Your Gear.</h1>
-            <p>Browse instruments, studio essentials, and digital downloads curated for musicians.</p>
-            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a class="btn btn-primary" href="<?php echo $base; ?>/products_store.php">🛒 Start Shopping</a>
-                <?php if (!is_logged_in()): ?>
-                    <a class="btn btn-secondary" href="<?php echo $base; ?>/signup.php">Create Account</a>
-                <?php else: ?>
-                    <a class="btn btn-secondary" href="<?php echo $base; ?>/customer/dashboard.php">Go to Dashboard</a>
-                <?php endif; ?>
+            <div class="hero-content">
+                <h1>Unleash Your Inner Artist</h1>
+                <p>Discover world-class instruments, studio gear, and digital assets designed for professionals.</p>
+                <div class="hero-buttons">
+                    <a class="btn btn-primary btn-lg" href="<?php echo $base; ?>/products_store.php">Shop Now</a>
+                    <?php if (!is_logged_in()): ?>
+                        <a class="btn btn-outline btn-lg" href="<?php echo $base; ?>/signup.php">Join the Community</a>
+                    <?php else: ?>
+                        <a class="btn btn-outline btn-lg" href="<?php echo $base; ?>/customer/dashboard.php">My Dashboard</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+
+        <section class="promo-section container">
+            <div class="promo-content">
+                <h2>Premium Guitars Collection</h2>
+                <p>Experience the finest craftsmanship with our exclusive range of acoustic and electric guitars. Perfect for studio recordings and live performances.</p>
+                <a href="<?php echo $base; ?>/products_store.php?category=guitars" class="btn btn-primary">Explore Guitars</a>
+            </div>
+            <div class="promo-image">
+                <img src="<?php echo $base; ?>/assets/images/Guitar.jpg" alt="Premium Guitar">
             </div>
         </section>
 
