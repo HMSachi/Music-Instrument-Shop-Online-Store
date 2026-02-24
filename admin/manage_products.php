@@ -10,31 +10,40 @@ $error = '';
 
 // Handle product actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = "Security validation failed. Please try again.";
+        redirect('admin/manage_products.php');
+    }
+
     if (isset($_POST['add_product'])) {
-        $product_name = $conn->real_escape_string($_POST['product_name']);
-        $brand = $conn->real_escape_string($_POST['brand']);
+        $product_name = sanitizeInput($_POST['product_name']);
+        $brand = sanitizeInput($_POST['brand']);
         $category_id = (int)$_POST['category_id'];
-        $description = $conn->real_escape_string($_POST['description']);
+        $description = sanitizeInput($_POST['description']);
         $price = (float)$_POST['price'];
         $stock = (int)$_POST['stock'];
         $product_type = $_POST['product_type'];
-        $image = $conn->real_escape_string($_POST['image']);
+        $image = sanitizeInput($_POST['image']);
         
         $sql = "INSERT INTO products (product_name, brand, category_id, description, price, stock, product_type, image) 
-                VALUES ('$product_name', '$brand', $category_id, '$description', $price, $stock, '$product_type', '$image')";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
-        if ($conn->query($sql)) {
+        $params = [$product_name, $brand, $category_id, $description, $price, $stock, $product_type, $image];
+        $types = "ssisdiss";
+        
+        if (preparedQuery($conn, $sql, $params, $types)) {
             $message = 'Product added successfully!';
         } else {
-            $error = 'Failed to add product: ' . $conn->error;
+            $error = 'Failed to add product.';
         }
     }
     
     if (isset($_POST['delete_product'])) {
         $product_id = (int)$_POST['product_id'];
-        $sql = "DELETE FROM products WHERE product_id = $product_id";
+        $sql = "DELETE FROM products WHERE product_id = ?";
         
-        if ($conn->query($sql)) {
+        if (preparedQuery($conn, $sql, [$product_id], "i")) {
             $message = 'Product deleted successfully!';
         } else {
             $error = 'Failed to delete product';
@@ -43,30 +52,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['edit_product'])) {
         $product_id = (int)$_POST['product_id'];
-        $product_name = $conn->real_escape_string($_POST['product_name']);
-        $brand = $conn->real_escape_string($_POST['brand']);
+        $product_name = sanitizeInput($_POST['product_name']);
+        $brand = sanitizeInput($_POST['brand']);
         $category_id = (int)$_POST['category_id'];
-        $description = $conn->real_escape_string($_POST['description']);
+        $description = sanitizeInput($_POST['description']);
         $price = (float)$_POST['price'];
         $stock = (int)$_POST['stock'];
         $product_type = $_POST['product_type'];
-        $image = $conn->real_escape_string($_POST['image']);
+        $image = sanitizeInput($_POST['image']);
         
         $sql = "UPDATE products SET 
-                product_name = '$product_name', 
-                brand = '$brand', 
-                category_id = $category_id, 
-                description = '$description', 
-                price = $price, 
-                stock = $stock, 
-                product_type = '$product_type', 
-                image = '$image' 
-                WHERE product_id = $product_id";
+                product_name = ?, 
+                brand = ?, 
+                category_id = ?, 
+                description = ?, 
+                price = ?, 
+                stock = ?, 
+                product_type = ?, 
+                image = ? 
+                WHERE product_id = ?";
         
-        if ($conn->query($sql)) {
+        $params = [$product_name, $brand, $category_id, $description, $price, $stock, $product_type, $image, $product_id];
+        $types = "ssisdissi";
+        
+        if (preparedQuery($conn, $sql, $params, $types)) {
             $message = 'Product updated successfully!';
         } else {
-            $error = 'Failed to update product: ' . $conn->error;
+            $error = 'Failed to update product.';
         }
     }
 }
@@ -75,19 +87,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $edit_product = null;
 if (isset($_GET['edit'])) {
     $edit_id = (int)$_GET['edit'];
-    $edit_res = $conn->query("SELECT * FROM products WHERE product_id = $edit_id");
+    $edit_res = preparedQuery($conn, "SELECT * FROM products WHERE product_id = ?", [$edit_id], "i");
     if ($edit_res && $edit_res->num_rows > 0) {
         $edit_product = $edit_res->fetch_assoc();
     }
 }
 
 // Get all products
-$products = $conn->query("SELECT p.*, c.category_name FROM products p 
+$products = preparedQuery($conn, "SELECT p.*, c.category_name FROM products p 
                           LEFT JOIN categories c ON p.category_id = c.category_id 
                           ORDER BY p.created_at DESC");
 
 // Get categories for dropdown
-$categories = $conn->query("SELECT * FROM categories WHERE parent_id IS NULL");
+$categories = preparedQuery($conn, "SELECT * FROM categories WHERE parent_id IS NULL");
 
 $page_title = 'Manage Products - Admin';
 include '../includes/header.php';
@@ -135,6 +147,7 @@ include '../includes/header.php';
                 <div class="admin-section-box">
                     <h2><?php echo $edit_product ? 'Edit Product' : 'Add New Product'; ?></h2>
                     <form method="POST" action="" class="admin-form">
+                        <?php echo csrfInput(); ?>
                         <?php if ($edit_product): ?>
                             <input type="hidden" name="product_id" value="<?php echo $edit_product['product_id']; ?>">
                         <?php endif; ?>
@@ -261,6 +274,7 @@ include '../includes/header.php';
                                             <div class="admin-actions">
                                                 <a href="?edit=<?php echo $product['product_id']; ?>" class="btn-sm btn-outline">Edit</a>
                                                 <form method="POST" style="display: inline;">
+                                                    <?php echo csrfInput(); ?>
                                                     <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                                                     <button type="submit" name="delete_product" class="btn-sm btn-danger" 
                                                             onclick="return confirm('Delete this product?')">

@@ -14,10 +14,12 @@ if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
 
 // Get cart items
 $product_ids = array_keys($_SESSION['cart']);
-$ids = implode(',', $product_ids);
 
-$sql = "SELECT * FROM products WHERE product_id IN ($ids)";
-$result = $conn->query($sql);
+// Securely fetch products in cart
+$placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+$types = str_repeat('i', count($product_ids));
+$sql = "SELECT * FROM products WHERE product_id IN ($placeholders)";
+$result = preparedQuery($conn, $sql, $product_ids, $types);
 
 $cart_items = [];
 $subtotal = 0;
@@ -36,9 +38,15 @@ $total = $subtotal + $shipping_cost;
 
 // Handle checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = "Security validation failed. Please try again.";
+        redirect('checkout.php');
+    }
+
     $user_id = $_SESSION['user_id'];
-    $shipping_address = $conn->real_escape_string($_POST['shipping_address']);
-    $payment_method = $conn->real_escape_string($_POST['payment_method']);
+    $shipping_address = sanitizeInput($_POST['shipping_address']);
+    $payment_method = sanitizeInput($_POST['payment_method']);
     
     if (empty($shipping_address)) {
         $error = 'Please provide a shipping address';
@@ -54,11 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             try {
                 // Create order
                 $order_sql = "INSERT INTO orders (user_id, total_amount, shipping_cost, order_status) 
-                              VALUES ($user_id, $total, $shipping_cost, 'Processing')";
+                              VALUES (?, ?, ?, 'Processing')";
                 
-                if ($conn->query($order_sql)) {
-                    $order_id = $conn->insert_id;
-                    
+                $order_id = preparedQuery($conn, $order_sql, [$user_id, $total, $shipping_cost], "idd");
+                
+                if ($order_id) {
                     // Insert order items
                     foreach ($cart_items as $item) {
                         $product_id = $item['product_id'];
@@ -66,13 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                         $price = $item['price'];
                         
                         $item_sql = "INSERT INTO order_items (order_id, product_id, quantity, price) 
-                                     VALUES ($order_id, $product_id, $quantity, $price)";
-                        $conn->query($item_sql);
+                                     VALUES (?, ?, ?, ?)";
+                        preparedQuery($conn, $item_sql, [$order_id, $product_id, $quantity, $price], "iiid");
                         
                         // Update stock (only for physical products)
                         if ($item['product_type'] === 'physical') {
-                            $update_stock = "UPDATE products SET stock = stock - $quantity WHERE product_id = $product_id";
-                            $conn->query($update_stock);
+                            $update_stock = "UPDATE products SET stock = stock - ? WHERE product_id = ?";
+                            preparedQuery($conn, $update_stock, [$quantity, $product_id], "ii");
                         }
                     }
                     
@@ -99,8 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 }
 
 // Get user details
-$user_sql = "SELECT * FROM users WHERE user_id = " . $_SESSION['user_id'];
-$user_result = $conn->query($user_sql);
+$user_sql = "SELECT * FROM users WHERE user_id = ?";
+$user_result = preparedQuery($conn, $user_sql, [$_SESSION['user_id']], "i");
 $user = $user_result->fetch_assoc();
 
 $page_title = 'Checkout - Melody Masters';
@@ -119,6 +127,7 @@ include 'includes/header.php';
             <!-- Checkout Form -->
             <div class="checkout-form">
                 <form method="POST" action="">
+                    <?php echo csrfInput(); ?>
                     <div class="form-section">
                         <h3>Shipping Information</h3>
                         

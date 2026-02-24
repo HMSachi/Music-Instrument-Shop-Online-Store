@@ -22,8 +22,13 @@ if (isLoggedIn()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        die("CSRF token validation failed.");
+    }
+
+    $email = sanitizeInput($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? ''; // Don't sanitize password to preserve characters
     
     // Validation
     if (empty($email) || empty($password)) {
@@ -88,6 +93,7 @@ include 'includes/header.php';
         <?php endif; ?>
         
         <form method="POST" action="" id="loginForm">
+            <?php echo csrfInput(); ?>
             <div class="form-group">
                 <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
                 <input type="email" id="email" name="email" required 

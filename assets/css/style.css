@@ -235,6 +235,7 @@ a {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     perspective: 1000px;
+    image-rendering: -webkit-optimize-contrast;
 }
 
 .btn:active {
@@ -433,8 +434,11 @@ a {
         border-color 0.4s ease;
     color: var(--heading);
     border: 1px solid var(--border);
-    will-change: transform;
+    will-change: transform, box-shadow;
     transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
     /* Advanced Stability: GPU Isolation */
     display: flex;
     flex-direction: column;
@@ -502,6 +506,7 @@ a {
     backface-visibility: hidden;
     isolation: isolate;
     contain: content;
+    transform-style: preserve-3d;
     /* Lock down card dimensions */
 }
 
@@ -2065,6 +2070,7 @@ a {
     margin-bottom: 1rem;
     display: block;
 }
+
 /* Success Page */
 .success-section {
     padding: 6rem 0;
@@ -2234,7 +2240,8 @@ a {
     margin-bottom: 0.5rem;
 }
 
-.dashboard-nav a:hover, .dashboard-nav a.active {
+.dashboard-nav a:hover,
+.dashboard-nav a.active {
     background: var(--primary);
     color: white;
     transform: translateX(5px);
@@ -2271,8 +2278,15 @@ a {
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .btn-link {
@@ -2346,4 +2360,55 @@ a {
     color: var(--primary);
     font-weight: 600;
     text-decoration: underline;
+}
+/* Staff Dashboard Styling */
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+}
+
+.form-control-sm {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: var(--bg-main);
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.form-control-sm:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.product-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+}
+
+.thumb-sm {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.vibrate-slow {
+    animation: vibrateSlow 3s ease-in-out infinite;
+}
+
+@keyframes vibrateSlow {
+    0%, 100% { transform: scale(1); }
+    50% { background-color: rgba(239, 68, 68, 0.03); }
+}
+
+.admin-table select.form-control-sm {
+    min-width: 120px;
+    cursor: pointer;
 }

@@ -10,32 +10,49 @@ $error = '';
 
 // Handle user actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = "Security validation failed. Please try again.";
+        redirect('admin/manage_users.php');
+    }
+
     if (isset($_POST['delete_user'])) {
         $user_id = (int)$_POST['user_id'];
-        $sql = "DELETE FROM users WHERE user_id = $user_id";
         
-        if ($conn->query($sql)) {
-            $message = 'User deleted successfully!';
+        // Prevent self-deletion
+        if ($user_id === $_SESSION['user_id']) {
+            $_SESSION['error'] = "You cannot delete your own account.";
         } else {
-            $error = 'Failed to delete user';
+            $sql = "DELETE FROM users WHERE user_id = ?";
+            if (preparedQuery($conn, $sql, [$user_id], "i")) {
+                $message = 'User deleted successfully!';
+            } else {
+                $error = 'Failed to delete user';
+            }
         }
     }
     
     if (isset($_POST['update_role'])) {
         $user_id = (int)$_POST['user_id'];
-        $role = $conn->real_escape_string($_POST['role']);
-        $sql = "UPDATE users SET role = '$role' WHERE user_id = $user_id";
+        $role = sanitizeInput($_POST['role']);
         
-        if ($conn->query($sql)) {
-            $message = 'User role updated successfully!';
+        // Validate role input
+        $allowed_roles = ['customer', 'staff', 'admin'];
+        if (!in_array($role, $allowed_roles)) {
+            $error = 'Invalid role selected';
         } else {
-            $error = 'Failed to update role';
+            $sql = "UPDATE users SET role = ? WHERE user_id = ?";
+            if (preparedQuery($conn, $sql, [$role, $user_id], "si")) {
+                $message = 'User role updated successfully!';
+            } else {
+                $error = 'Failed to update role';
+            }
         }
     }
 }
 
 // Get all users
-$users = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
+$users = preparedQuery($conn, "SELECT * FROM users ORDER BY created_at DESC");
 
 $page_title = 'Manage Users - Admin';
 include '../includes/header.php';
@@ -104,6 +121,7 @@ include '../includes/header.php';
                                         <td><?php echo htmlspecialchars($user['phone'] ?? 'N/A'); ?></td>
                                         <td>
                                             <form method="POST" style="display: inline;">
+                                                <?php echo csrfInput(); ?>
                                                 <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
                                                 <select name="role" onchange="this.form.submit()" class="role-select">
                                                     <option value="customer" <?php echo $user['role'] === 'customer' ? 'selected' : ''; ?>>Customer</option>
@@ -117,6 +135,7 @@ include '../includes/header.php';
                                         <td>
                                             <?php if ($user['user_id'] !== $_SESSION['user_id']): ?>
                                                 <form method="POST" style="display: inline;">
+                                                    <?php echo csrfInput(); ?>
                                                     <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
                                                     <button type="submit" name="delete_user" class="btn-sm btn-danger" 
                                                             onclick="return confirm('Delete this user?')">

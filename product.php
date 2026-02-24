@@ -8,6 +8,13 @@ $error = '';
 
 // Handle add to cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        setFlashMessage('error', 'Security validation failed.');
+        header("Location: " . $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING']);
+        exit();
+    }
+
     $product_id = (int)$_POST['product_id'];
     $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
     
@@ -28,22 +35,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
 
 // Handle review submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        setFlashMessage('error', 'Security validation failed.');
+        header("Location: " . $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING']);
+        exit();
+    }
+
     if (!isLoggedIn()) {
         setFlashMessage('error', 'You must be logged in to leave a review.');
     } else {
         $user_id = $_SESSION['user_id'];
         $rating = (int)$_POST['rating'];
-        $comment = $conn->real_escape_string($_POST['comment']);
+        $comment = sanitizeInput($_POST['comment']);
         
-        // Purchase check
+        // Purchase check using preparedQuery
         $purchase_sql = "SELECT oi.product_id FROM order_items oi 
                         JOIN orders o ON oi.order_id = o.order_id 
-                        WHERE o.user_id = $user_id AND oi.product_id = $product_id AND o.order_status = 'Delivered'";
-        $purchase_result = $conn->query($purchase_sql);
+                        WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'Delivered'";
+        $purchase_result = preparedQuery($conn, $purchase_sql, [$user_id, $product_id], "ii");
         
         if ($purchase_result && $purchase_result->num_rows > 0) {
-            $insert_review = "INSERT INTO reviews (product_id, user_id, rating, comment) VALUES ($product_id, $user_id, $rating, '$comment')";
-            if ($conn->query($insert_review)) {
+            $insert_review = "INSERT INTO reviews (product_id, user_id, rating, comment) VALUES (?, ?, ?, ?)";
+            if (preparedQuery($conn, $insert_review, [$product_id, $user_id, $rating, $comment], "iiis")) {
                 setFlashMessage('success', 'Thank you! Your review has been posted.');
             } else {
                 setFlashMessage('error', 'Failed to submit review. Please try again.');
@@ -59,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
 // Fetch product details
 $sql = "SELECT p.*, c.category_name FROM products p 
         LEFT JOIN categories c ON p.category_id = c.category_id 
-        WHERE p.product_id = $product_id";
-$result = $conn->query($sql);
+        WHERE p.product_id = ?";
+$result = preparedQuery($conn, $sql, [$product_id], "i");
 
 if (!$result || $result->num_rows === 0) {
     redirect('shop.php');
@@ -74,8 +88,8 @@ if (isLoggedIn()) {
     $user_id = $_SESSION['user_id'];
     $check_purchase = "SELECT oi.product_id FROM order_items oi 
                       JOIN orders o ON oi.order_id = o.order_id 
-                      WHERE o.user_id = $user_id AND oi.product_id = $product_id AND o.order_status = 'Delivered'";
-    $v_result = $conn->query($check_purchase);
+                      WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'Delivered'";
+    $v_result = preparedQuery($conn, $check_purchase, [$user_id, $product_id], "ii");
     if ($v_result && $v_result->num_rows > 0) {
         $is_verified_buyer = true;
     }
@@ -84,13 +98,13 @@ if (isLoggedIn()) {
 // Fetch reviews
 $reviews_sql = "SELECT r.*, u.full_name FROM reviews r 
                 JOIN users u ON r.user_id = u.user_id 
-                WHERE r.product_id = $product_id 
+                WHERE r.product_id = ? 
                 ORDER BY r.review_date DESC";
-$reviews = $conn->query($reviews_sql);
+$reviews = preparedQuery($conn, $reviews_sql, [$product_id], "i");
 
 // Calculate average rating
-$rating_sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM reviews WHERE product_id = $product_id";
-$rating_result = $conn->query($rating_sql);
+$rating_sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM reviews WHERE product_id = ?";
+$rating_result = preparedQuery($conn, $rating_sql, [$product_id], "i");
 $rating_data = $rating_result->fetch_assoc();
 $avg_rating = round($rating_data['avg_rating'] ?? 0, 1);
 $total_reviews = $rating_data['total_reviews'];
@@ -147,6 +161,7 @@ include 'includes/header.php';
                 
                 <?php if ($product['stock'] > 0): ?>
                     <form method="POST" action="" class="add-to-cart-form">
+                        <?php echo csrfInput(); ?>
                         <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                         <div class="quantity-selector">
                             <label for="quantity">Quantity</label>
@@ -175,6 +190,7 @@ include 'includes/header.php';
                 <div class="review-form-box">
                     <h3>Write a Review</h3>
                     <form method="POST" action="">
+                        <?php echo csrfInput(); ?>
                         <div class="form-group">
                             <label>Rating</label>
                             <div class="rating-input">

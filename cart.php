@@ -7,6 +7,12 @@ $message_type = 'success';
 
 // Handle cart actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = "Security validation failed. Please try again.";
+        redirect('cart.php');
+    }
+
     // Update Cart Quantity
     if (isset($_POST['update_cart'])) {
         foreach ($_POST['quantity'] as $product_id => $quantity) {
@@ -14,9 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $quantity = (int)$quantity;
             
             if ($quantity > 0) {
-                // Check stock before updating
-                $stock_query = "SELECT stock FROM products WHERE product_id = $product_id";
-                $stock_check = $conn->query($stock_query);
+                // Check stock before updating using preparedQuery
+                $stock_query = "SELECT stock FROM products WHERE product_id = ?";
+                $stock_check = preparedQuery($conn, $stock_query, [$product_id], "i");
                 
                 if ($stock_check && $row = $stock_check->fetch_assoc()) {
                     $product_stock = $row['stock'];
@@ -53,12 +59,14 @@ $subtotal = 0;
 
 if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
     $product_ids = array_keys($_SESSION['cart']);
-    $ids_string = implode(',', $product_ids);
     
-    $sql = "SELECT * FROM products WHERE product_id IN ($ids_string)";
-    $result = $conn->query($sql);
+    // Securely fetch products in cart
+    $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+    $types = str_repeat('i', count($product_ids));
+    $sql = "SELECT * FROM products WHERE product_id IN ($placeholders)";
+    $result = preparedQuery($conn, $sql, $product_ids, $types);
     
-    while ($product = $result->fetch_assoc()) {
+    while ($result && $product = $result->fetch_assoc()) {
         $pid = $product['product_id'];
         $product['quantity'] = $_SESSION['cart'][$pid];
         $product['line_total'] = $product['price'] * $product['quantity'];
@@ -106,6 +114,7 @@ include 'includes/header.php';
             <div class="cart-grid">
                 <div class="cart-main">
                     <form method="POST" action="">
+                        <?php echo csrfInput(); ?>
                         <div class="cart-table-wrapper">
                             <table class="cart-table">
                                 <thead>

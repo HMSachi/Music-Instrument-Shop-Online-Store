@@ -6,6 +6,13 @@ $message = '';
 
 // Handle add to cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        setFlashMessage('error', 'Security validation failed.');
+        header("Location: " . $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING']);
+        exit();
+    }
+
     $product_id = (int)$_POST['product_id'];
     $quantity = 1; 
     
@@ -24,29 +31,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     exit();
 }
 
-// Get filters
+// Get filters and sanitize
 $category_id = isset($_GET['category']) ? (int)$_GET['category'] : 0;
-$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
-$brand = isset($_GET['brand']) ? $conn->real_escape_string($_GET['brand']) : '';
+$search = isset($_GET['search']) ? sanitizeInput($_GET['search']) : '';
+$brand = isset($_GET['brand']) ? sanitizeInput($_GET['brand']) : '';
 $min_price = isset($_GET['min_price']) && $_GET['min_price'] !== '' ? (float)$_GET['min_price'] : null;
 $max_price = isset($_GET['max_price']) && $_GET['max_price'] !== '' ? (float)$_GET['max_price'] : null;
 
-// Build query
+// Build dynamic query with prepared statements
 $where = [];
+$params = [];
+$types = "";
+
 if ($category_id > 0) {
-    $where[] = "p.category_id = $category_id";
+    $where[] = "p.category_id = ?";
+    $params[] = $category_id;
+    $types .= "i";
 }
 if (!empty($search)) {
-    $where[] = "(p.product_name LIKE '%$search%' OR p.description LIKE '%$search%' OR p.brand LIKE '%$search%')";
+    $search_param = "%$search%";
+    $where[] = "(p.product_name LIKE ? OR p.description LIKE ? OR p.brand LIKE ?)";
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $types .= "sss";
 }
 if (!empty($brand)) {
-    $where[] = "p.brand = '$brand'";
+    $where[] = "p.brand = ?";
+    $params[] = $brand;
+    $types .= "s";
 }
 if ($min_price !== null) {
-    $where[] = "p.price >= $min_price";
+    $where[] = "p.price >= ?";
+    $params[] = $min_price;
+    $types .= "d";
 }
 if ($max_price !== null) {
-    $where[] = "p.price <= $max_price";
+    $where[] = "p.price <= ?";
+    $params[] = $max_price;
+    $types .= "d";
 }
 
 $where_clause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -55,15 +78,16 @@ $products_sql = "SELECT p.*, c.category_name FROM products p
                  LEFT JOIN categories c ON p.category_id = c.category_id 
                  $where_clause
                  ORDER BY p.created_at DESC";
-$products = $conn->query($products_sql);
+
+$products = preparedQuery($conn, $products_sql, $params, $types);
 
 // Get all categories for filter
 $categories_sql = "SELECT * FROM categories WHERE parent_id IS NULL";
-$categories = $conn->query($categories_sql);
+$categories = preparedQuery($conn, $categories_sql);
 
 // Get all unique brands for filter
 $brands_sql = "SELECT DISTINCT brand FROM products WHERE brand != '' ORDER BY brand ASC";
-$brands_result = $conn->query($brands_sql);
+$brands_result = preparedQuery($conn, $brands_sql);
 
 $page_title = 'Shop - Melody Masters';
 include 'includes/header.php';
@@ -175,6 +199,7 @@ include 'includes/header.php';
                                         <div class="product-actions">
                                             <?php if ($product['stock'] > 0): ?>
                                                 <form method="POST" action="" style="display:inline;">
+                                                    <?php echo csrfInput(); ?>
                                                     <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                                                     <button type="submit" name="add_to_cart" class="btn btn-sm btn-primary" title="Add to Cart">
                                                         <i class="fas fa-shopping-cart"></i>
