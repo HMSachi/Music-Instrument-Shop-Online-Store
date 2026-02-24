@@ -164,26 +164,27 @@ include 'includes/header.php';
 
 <section class="features-section">
     <div class="container">
+        <h2 class="section-title">Our Commitment</h2>
         <div class="features-grid">
             <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.1s; padding: 4rem 3rem;">
-                <i class="fas fa-shipping-fast" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
-                <h3 style="font-weight: 800; margin-bottom: 1rem;">Global Logistics</h3>
-                <p style="color: var(--text-light); font-size: 1.05rem;">Free Shipping over £100</p>
+                <i class="fas fa-shipping-fast"></i>
+                <h3>Global Logistics</h3>
+                <p>Free Shipping over £100</p>
             </div>
-            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.2s; padding: 4rem 3rem;">
-                <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
-                <h3 style="font-weight: 800; margin-bottom: 1rem;">Secure Vault</h3>
-                <p style="color: var(--text-light); font-size: 1.05rem;">End-to-End Encryption</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.2s;">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Secure Vault</h3>
+                <p>End-to-End Encryption</p>
             </div>
-            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.3s; padding: 4rem 3rem;">
-                <i class="fas fa-award" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
-                <h3 style="font-weight: 800; margin-bottom: 1rem;">Prime Quality</h3>
-                <p style="color: var(--text-light); font-size: 1.05rem;">Luthier Tested</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.3s;">
+                <i class="fas fa-award"></i>
+                <h3>Prime Quality</h3>
+                <p>Luthier Tested</p>
             </div>
-            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.4s; padding: 4rem 3rem;">
-                <i class="fas fa-undo" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
-                <h3 style="font-weight: 800; margin-bottom: 1rem;">Purity Seal</h3>
-                <p style="color: var(--text-light); font-size: 1.05rem;">Lifetime Integrity</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.4s;">
+                <i class="fas fa-undo"></i>
+                <h3>Purity Seal</h3>
+                <p>Lifetime Integrity</p>
             </div>
         </div>
     </div>
