@@ -13,20 +13,21 @@ $order_id = $_SESSION['last_order_id'];
 $user_id = $_SESSION['user_id'];
 
 // Get order details
-$order_sql = "SELECT * FROM orders WHERE order_id = $order_id AND user_id = $user_id";
-$order_result = $conn->query($order_sql);
-$order = $order_result->fetch_assoc();
+$order_sql = "SELECT * FROM orders WHERE order_id = ? AND user_id = ?";
+$order_result = preparedQuery($conn, $order_sql, [$order_id, $user_id], "ii");
 
-if (!$order) {
-    redirect('customer/dashboard.php');
+if (!$order_result || $order_result->num_rows === 0) {
+    redirect('index.php');
 }
 
+$order = $order_result->fetch_assoc();
+
 // Get order items with product details
-$items_sql = "SELECT oi.*, p.product_name, p.product_type, p.image 
+$items_sql = "SELECT oi.*, p.product_name, p.image 
               FROM order_items oi 
               JOIN products p ON oi.product_id = p.product_id 
-              WHERE oi.order_id = $order_id";
-$items = $conn->query($items_sql);
+              WHERE oi.order_id = ?";
+$items = preparedQuery($conn, $items_sql, [$order_id], "i");
 
 $page_title = 'Order Confirmed - Melody Masters';
 include 'includes/header.php';

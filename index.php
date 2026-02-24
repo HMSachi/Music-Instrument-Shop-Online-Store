@@ -21,11 +21,11 @@ if (!$conn) {
 $featured_sql = "SELECT p.*, c.category_name FROM products p 
                  LEFT JOIN categories c ON p.category_id = c.category_id 
                  ORDER BY p.created_at DESC LIMIT 8";
-$featured_products = safeQuery($conn, $featured_sql);
+$featured_products = preparedQuery($conn, $featured_sql);
 
 // Fetch categories
 $categories_sql = "SELECT * FROM categories WHERE parent_id IS NULL";
-$categories = safeQuery($conn, $categories_sql);
+$categories = preparedQuery($conn, $categories_sql);
 
 // If queries failed (e.g. missing tables)
 if ($featured_products === false || $categories === false) {

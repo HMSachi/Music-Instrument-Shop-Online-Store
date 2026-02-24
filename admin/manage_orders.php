@@ -10,12 +10,18 @@ $error = '';
 
 // Handle order status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $_SESSION['error'] = "Security validation failed. Please try again.";
+        redirect('admin/manage_orders.php');
+    }
+
     $order_id = (int)$_POST['order_id'];
-    $status = $conn->real_escape_string($_POST['status']);
+    $status = sanitizeInput($_POST['status']);
     
-    $sql = "UPDATE orders SET order_status = '$status' WHERE order_id = $order_id";
+    $sql = "UPDATE orders SET order_status = ? WHERE order_id = ?";
     
-    if ($conn->query($sql)) {
+    if (preparedQuery($conn, $sql, [$status, $order_id], "si")) {
         $message = 'Order status updated successfully!';
     } else {
         $error = 'Failed to update order status';
@@ -23,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 }
 
 // Get all orders
-$orders = $conn->query("SELECT o.*, u.full_name, u.email FROM orders o 
+$orders = preparedQuery($conn, "SELECT o.*, u.full_name, u.email FROM orders o 
                         JOIN users u ON o.user_id = u.user_id 
                         ORDER BY o.order_date DESC");
 
@@ -95,6 +101,7 @@ include '../includes/header.php';
                                         <td><?php echo formatPrice($order['total_amount']); ?></td>
                                         <td>
                                             <form method="POST" style="display: inline;">
+                                                <?php echo csrfInput(); ?>
                                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                                                 <select name="status" onchange="this.form.submit()" class="status-select">
                                                     <option value="Pending" <?php echo $order['order_status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
@@ -120,8 +127,8 @@ include '../includes/header.php';
                                                 <?php
                                                 $items_sql = "SELECT oi.*, p.product_name, p.image FROM order_items oi 
                                                               JOIN products p ON oi.product_id = p.product_id 
-                                                              WHERE oi.order_id = " . $order['order_id'];
-                                                $items = $conn->query($items_sql);
+                                                              WHERE oi.order_id = ?";
+                                                $items = preparedQuery($conn, $items_sql, [$order['order_id']], "i");
                                                 ?>
                                                 <table class="items-table">
                                                     <thead>

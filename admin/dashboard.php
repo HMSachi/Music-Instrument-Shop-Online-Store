@@ -15,30 +15,30 @@ requireAdmin();
 $stats = [];
 
 // Total products
-$products_result = safeQuery($conn, "SELECT COUNT(*) as count FROM products");
+$products_result = preparedQuery($conn, "SELECT COUNT(*) as count FROM products");
 $stats['products'] = $products_result->fetch_assoc()['count'];
 
 // Total users
-$users_result = safeQuery($conn, "SELECT COUNT(*) as count FROM users WHERE role = 'customer'");
+$users_result = preparedQuery($conn, "SELECT COUNT(*) as count FROM users WHERE role = 'customer'");
 $stats['users'] = $users_result->fetch_assoc()['count'];
 
 // Total orders
-$orders_result = safeQuery($conn, "SELECT COUNT(*) as count FROM orders");
+$orders_result = preparedQuery($conn, "SELECT COUNT(*) as count FROM orders");
 $stats['orders'] = $orders_result->fetch_assoc()['count'];
 
 // Total revenue
-$revenue_result = safeQuery($conn, "SELECT SUM(total_amount) as total FROM orders WHERE order_status != 'Cancelled'");
+$revenue_result = preparedQuery($conn, "SELECT SUM(total_amount) as total FROM orders WHERE order_status != 'Cancelled'");
 $stats['revenue'] = $revenue_result->fetch_assoc()['total'] ?? 0;
 
 // Low stock items (stock <= 5)
-$low_stock_query = "SELECT COUNT(*) as count FROM products WHERE stock <= 5 AND product_type = 'physical'";
-$low_stock_result = safeQuery($conn, $low_stock_query);
+$low_stock_query = "SELECT COUNT(*) as count FROM products WHERE stock <= ? AND product_type = 'physical'";
+$low_stock_result = preparedQuery($conn, $low_stock_query, [5], "i");
 $stats['low_stock'] = $low_stock_result->fetch_assoc()['count'];
 
-$low_stock_items = safeQuery($conn, "SELECT product_name, brand, stock FROM products WHERE stock <= 5 AND product_type = 'physical' LIMIT 5");
+$low_stock_items = preparedQuery($conn, "SELECT product_name, brand, stock FROM products WHERE stock <= ? AND product_type = 'physical' LIMIT 5", [5], "i");
 
 // Recent orders
-$recent_orders = safeQuery($conn, "SELECT o.*, u.full_name FROM orders o 
+$recent_orders = preparedQuery($conn, "SELECT o.*, u.full_name FROM orders o 
                                JOIN users u ON o.user_id = u.user_id 
                                ORDER BY o.order_date DESC LIMIT 5");
 

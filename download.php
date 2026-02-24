@@ -12,33 +12,32 @@ $product_id = (int)$_GET['id'];
 $user_id = $_SESSION['user_id'];
 
 // 1. Ownership & Item Retrieval
-// We need order_item_id to track the specific purchase
 $own_sql = "SELECT oi.order_item_id, p.product_name, dp.download_limit, dp.file_path 
             FROM order_items oi 
             JOIN orders o ON oi.order_id = o.order_id 
             JOIN products p ON oi.product_id = p.product_id
             LEFT JOIN digital_products dp ON p.product_id = dp.product_id
-            WHERE o.user_id = $user_id AND oi.product_id = $product_id 
+            WHERE o.user_id = ? AND oi.product_id = ? 
             LIMIT 1";
 
-$own_result = $conn->query($own_sql);
+$own_result = preparedQuery($conn, $own_sql, [$user_id, $product_id], "ii");
 
-if ($own_result->num_rows === 0) {
+if (!$own_result || $own_result->num_rows === 0) {
     die("You do not have access to this download.");
 }
 
 $data = $own_result->fetch_assoc();
 $order_item_id = $data['order_item_id'];
-$download_limit = $data['download_limit'] ?? 3; // Default to 3
+$download_limit = $data['download_limit'] ?? 3;
 $file_path = $data['file_path'];
 
-// 2. Download Count Tracking (Lazy Initialization)
-$track_sql = "SELECT * FROM order_downloads WHERE order_item_id = $order_item_id";
-$track_result = $conn->query($track_sql);
+// 2. Download Count Tracking
+$track_sql = "SELECT * FROM order_downloads WHERE order_item_id = ?";
+$track_result = preparedQuery($conn, $track_sql, [$order_item_id], "i");
 
-if ($track_result->num_rows === 0) {
+if (!$track_result || $track_result->num_rows === 0) {
     // Initialize record
-    $conn->query("INSERT INTO order_downloads (order_item_id, download_count) VALUES ($order_item_id, 0)");
+    preparedQuery($conn, "INSERT INTO order_downloads (order_item_id, download_count) VALUES (?, 0)", [$order_item_id], "i");
     $current_count = 0;
 } else {
     $track = $track_result->fetch_assoc();
@@ -50,9 +49,8 @@ if ($current_count >= $download_limit) {
     die("Download limit reached for this purchase. (Limit: $download_limit)");
 }
 
-// 4. File Preparation
+// 4. File Preparation (Same logic as before, ensuring file existence)
 if (empty($file_path)) {
-    // Fallback for demo
     $file_path = "assets/downloads/demo_sheet_music.pdf";
     if (!file_exists($file_path)) {
         if (!is_dir('assets/downloads')) mkdir('assets/downloads', 0777, true);
@@ -66,7 +64,7 @@ if (!file_exists($file_path)) {
 
 // 5. Success: Increment Count and Serve File
 $new_count = $current_count + 1;
-$conn->query("UPDATE order_downloads SET download_count = $new_count, last_download = CURRENT_TIMESTAMP WHERE order_item_id = $order_item_id");
+preparedQuery($conn, "UPDATE order_downloads SET download_count = ?, last_download = CURRENT_TIMESTAMP WHERE order_item_id = ?", [$new_count, $order_item_id], "ii");
 
 header('Content-Description: File Transfer');
 header('Content-Type: application/octet-stream');

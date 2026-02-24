@@ -17,12 +17,17 @@ if (isLoggedIn()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $full_name = trim($_POST['full_name'] ?? '');
-    $email = trim($_POST['email'] ?? '');
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        die("CSRF token validation failed.");
+    }
+
+    $full_name = sanitizeInput($_POST['full_name'] ?? '');
+    $email = sanitizeInput($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
-    $phone = trim($_POST['phone'] ?? '');
-    $address = trim($_POST['address'] ?? '');
+    $phone = sanitizeInput($_POST['phone'] ?? '');
+    $address = sanitizeInput($_POST['address'] ?? '');
     
     // Validation - Collect ALL errors
     if (empty($full_name)) {
@@ -260,6 +265,7 @@ include 'includes/header.php';
         <?php endif; ?>
         
         <form method="POST" action="" id="registerForm" novalidate>
+            <?php echo csrfInput(); ?>
             <div class="form-group">
                 <label for="full_name">
                     <i class="fas fa-user"></i> Full Name

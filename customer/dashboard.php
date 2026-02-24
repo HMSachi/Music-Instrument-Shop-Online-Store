@@ -13,64 +13,74 @@ requireLogin();
 $user_id = $_SESSION['user_id'];
 
 // Get user details
-$user_sql = "SELECT * FROM users WHERE user_id = $user_id";
-$user_result = safeQuery($conn, $user_sql);
+$user_sql = "SELECT * FROM users WHERE user_id = ?";
+$user_result = preparedQuery($conn, $user_sql, [$user_id], "i");
 $user = $user_result->fetch_assoc();
 
 // Get user orders
-$orders_sql = "SELECT * FROM orders WHERE user_id = $user_id ORDER BY order_date DESC";
-$orders = safeQuery($conn, $orders_sql);
+$orders_sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC";
+$orders = preparedQuery($conn, $orders_sql, [$user_id], "i");
 
 // Check for order success message
 $order_placed = isset($_GET['order_placed']) ? true : false;
 
 // Handle Profile Update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $full_name = $conn->real_escape_string($_POST['full_name']);
-    $phone = $conn->real_escape_string($_POST['phone']);
-    $address = $conn->real_escape_string($_POST['address']);
-    
-    $update_sql = "UPDATE users SET full_name = '$full_name', phone = '$phone', address = '$address' WHERE user_id = $user_id";
-    if ($conn->query($update_sql)) {
-        $success_msg = "Profile updated successfully!";
-        // Refresh user data
-        $user_result = safeQuery($conn, $user_sql);
-        $user = $user_result->fetch_assoc();
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $error_msg = "Security validation failed. Please try again.";
     } else {
-        $error_msg = "Failed to update profile.";
+        $full_name = sanitizeInput($_POST['full_name']);
+        $phone = sanitizeInput($_POST['phone']);
+        $address = sanitizeInput($_POST['address']);
+        
+        $update_sql = "UPDATE users SET full_name = ?, phone = ?, address = ? WHERE user_id = ?";
+        if (preparedQuery($conn, $update_sql, [$full_name, $phone, $address, $user_id], "sssi")) {
+            $success_msg = "Profile updated successfully!";
+            // Refresh user data
+            $user_result = preparedQuery($conn, $user_sql, [$user_id], "i");
+            $user = $user_result->fetch_assoc();
+        } else {
+            $error_msg = "Failed to update profile.";
+        }
     }
 }
 
 // Handle Review Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
-    $product_id = (int)$_POST['product_id'];
-    $rating = (int)$_POST['rating'];
-    $comment = $conn->real_escape_string($_POST['comment']);
-    
-    // Verify purchase and delivery status
-    $verify_sql = "SELECT o.order_status FROM orders o 
-                   JOIN order_items oi ON o.order_id = oi.order_id 
-                   WHERE o.user_id = $user_id AND oi.product_id = $product_id AND o.order_status = 'Delivered'
-                   LIMIT 1";
-    $verify_res = $conn->query($verify_sql);
-    
-    if ($verify_res && $verify_res->num_rows > 0) {
-        // Check if already reviewed
-        $check_rev = "SELECT review_id FROM reviews WHERE user_id = $user_id AND product_id = $product_id";
-        $check_res = $conn->query($check_rev);
+    // Validate CSRF token
+    if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+        $error_msg = "Security validation failed. Please try again.";
+    } else {
+        $product_id = (int)$_POST['product_id'];
+        $rating = (int)$_POST['rating'];
+        $comment = sanitizeInput($_POST['comment']);
         
-        if ($check_res && $check_res->num_rows == 0) {
-            $rev_sql = "INSERT INTO reviews (user_id, product_id, rating, comment) VALUES ($user_id, $product_id, $rating, '$comment')";
-            if ($conn->query($rev_sql)) {
-                $success_msg = "Thank you for your review!";
+        // Verify purchase and delivery status using preparedQuery
+        $verify_sql = "SELECT o.order_status FROM orders o 
+                       JOIN order_items oi ON o.order_id = oi.order_id 
+                       WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'Delivered'
+                       LIMIT 1";
+        $verify_res = preparedQuery($conn, $verify_sql, [$user_id, $product_id], "ii");
+        
+        if ($verify_res && $verify_res->num_rows > 0) {
+            // Check if already reviewed
+            $check_rev = "SELECT review_id FROM reviews WHERE user_id = ? AND product_id = ?";
+            $check_res = preparedQuery($conn, $check_rev, [$user_id, $product_id], "ii");
+            
+            if ($check_res && $check_res->num_rows == 0) {
+                $rev_sql = "INSERT INTO reviews (user_id, product_id, rating, comment) VALUES (?, ?, ?, ?)";
+                if (preparedQuery($conn, $rev_sql, [$user_id, $product_id, $rating, $comment], "iiis")) {
+                    $success_msg = "Thank you for your review!";
+                } else {
+                    $error_msg = "Failed to submit review.";
+                }
             } else {
-                $error_msg = "Failed to submit review.";
+                $error_msg = "You have already reviewed this product.";
             }
         } else {
-            $error_msg = "You have already reviewed this product.";
+            $error_msg = "You can only review instruments you've purchased and received.";
         }
-    } else {
-        $error_msg = "You can only review instruments you've purchased and received.";
     }
 }
 
@@ -147,8 +157,8 @@ include '../includes/header.php';
                                                   JOIN products p ON oi.product_id = p.product_id 
                                                   LEFT JOIN digital_products dp ON p.product_id = dp.product_id
                                                   LEFT JOIN order_downloads od ON oi.order_item_id = od.order_item_id
-                                                  WHERE oi.order_id = " . $order['order_id'];
-                                    $items = $conn->query($items_sql);
+                                                  WHERE oi.order_id = ?";
+                                    $items = preparedQuery($conn, $items_sql, [$order['order_id']], "i");
                                     ?>
                                     
                                     <div class="order-items">
@@ -187,6 +197,7 @@ include '../includes/header.php';
                                                             <!-- Review Form (Hidden) -->
                                                             <div id="review-form-<?php echo $item['product_id']; ?>" class="review-form-inline" style="display: none;">
                                                                 <form method="POST" action="">
+                                                                    <?php echo csrfInput(); ?>
                                                                     <input type="hidden" name="product_id" value="<?php echo $item['product_id']; ?>">
                                                                     <div class="form-group">
                                                                         <label>Rating</label>
@@ -237,6 +248,7 @@ include '../includes/header.php';
                     <h2>Profile Information</h2>
                     
                     <form method="POST" action="" class="profile-update-form">
+                        <?php echo csrfInput(); ?>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="full_name">Full Name</label>
