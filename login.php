@@ -1,71 +1,115 @@
 <?php
-require_once __DIR__ . '/includes/db_connection.php';
-require_once __DIR__ . '/includes/session.php';
-require_once __DIR__ . '/includes/auth.php';
+require_once 'config/config.php';
+require_once 'config/database.php';
 
-$base = BASE_PATH;
+// Check if connection was successful
+if (!$conn) {
+    setFlashMessage('error', 'Database connection failed. Please check your configuration.');
+    redirect('index.php');
+}
+
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $auth = new AuthHandler($db);
-    $result = $auth->login($_POST['email'] ?? '', $_POST['password'] ?? '');
-    if ($result['success']) {
-        $redirect = $base . '/index.php';
-        if ($_SESSION['role'] === 'admin') {
-            $redirect = $base . '/admin/dashboard.php';
-        } elseif ($_SESSION['role'] === 'staff') {
-            $redirect = $base . '/staff/dashboard.php';
-        } elseif ($_SESSION['role'] === 'customer') {
-            $redirect = $base . '/products_store.php';
-        }
-        header('Location: ' . $redirect);
-        exit();
+// Check if already logged in
+if (isLoggedIn()) {
+    if (isAdmin()) {
+        redirect('admin/dashboard.php');
+    } elseif (isStaff()) {
+        redirect('staff/dashboard.php');
+    } else {
+        redirect('customer/dashboard.php');
     }
-    $error = $result['message'];
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    
+    // Validation
+    if (empty($email) || empty($password)) {
+        $error = 'Please fill in all fields';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Please enter a valid email address';
+    } else {
+        // Use prepared statement to prevent SQL injection
+        $stmt = $conn->prepare("SELECT user_id, full_name, email, password, role FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result && $result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            
+            // Verify password
+            if (password_verify($password, $user['password'])) {
+                // Regenerate session ID to prevent session fixation
+                session_regenerate_id(true);
+                
+                // Set session variables
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['full_name'] = $user['full_name'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['last_activity'] = time();
+                
+                setFlashMessage('success', 'Logged in successfully! Welcome back, ' . htmlspecialchars($user['full_name']));
+                
+                // Redirect based on role
+                if ($user['role'] === 'admin') {
+                    redirect('admin/dashboard.php');
+                } elseif ($user['role'] === 'staff') {
+                    redirect('staff/dashboard.php');
+                } else {
+                    redirect('customer/dashboard.php');
+                }
+            } else {
+                $error = 'Invalid email or password';
+            }
+        } else {
+            $error = 'Invalid email or password';
+        }
+        
+        $stmt->close();
+    }
+}
+
+$page_title = 'Login - Melody Masters';
+include 'includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Melody Masters</title>
-    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/style.css">
-</head>
-<body>
-    <header>
-        <nav class="container">
-            <a href="<?php echo $base; ?>/index.php" class="logo">Melody Masters</a>
-        </nav>
-    </header>
 
-    <main class="container">
-        <div style="max-width: 500px; margin: 3rem auto;">
-            <div class="card">
-                <h1 class="text-center mb-3">Login to Your Account</h1>
-                <?php if ($error): ?>
-                    <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-                <?php endif; ?>
-                <form method="POST" action="">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-                </form>
-                <p class="text-center mt-3">
-                    Don't have an account? <a href="<?php echo $base; ?>/signup.php">Sign up here</a>
-                </p>
+<div class="auth-container">
+    <div class="auth-box">
+        <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+        
+        <?php if ($error): ?>
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
             </div>
+        <?php endif; ?>
+        
+        <form method="POST" action="" id="loginForm">
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="example@mail.com"
+                       value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+            </div>
+            
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Enter your password" minlength="6">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="register.php">Register here</a></p>
         </div>
-    </main>
+    </div>
+</div>
 
-    <footer>
-        <p>&copy; 2026 Melody Masters. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+<?php include 'includes/footer.php'; ?>
