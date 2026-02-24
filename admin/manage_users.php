@@ -100,56 +100,60 @@ include '../includes/header.php';
                     <h2>All Users</h2>
                     
                     <?php if ($users && $users->num_rows > 0): ?>
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Role</th>
-                                    <th>Registered</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($user = $users->fetch_assoc()): ?>
+                        <div class="table-container">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td><?php echo $user['user_id']; ?></td>
-                                        <td><?php echo htmlspecialchars($user['full_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                        <td><?php echo htmlspecialchars($user['phone'] ?? 'N/A'); ?></td>
-                                        <td>
-                                            <form method="POST" style="display: inline;">
-                                                <?php echo csrfInput(); ?>
-                                                <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
-                                                <select name="role" onchange="this.form.submit()" class="role-select">
-                                                    <option value="customer" <?php echo $user['role'] === 'customer' ? 'selected' : ''; ?>>Customer</option>
-                                                    <option value="staff" <?php echo $user['role'] === 'staff' ? 'selected' : ''; ?>>Staff</option>
-                                                    <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                                </select>
-                                                <input type="hidden" name="update_role">
-                                            </form>
-                                        </td>
-                                        <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
-                                        <td>
-                                            <?php if ($user['user_id'] !== $_SESSION['user_id']): ?>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Role</th>
+                                        <th>Registered</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php while ($user = $users->fetch_assoc()): ?>
+                                        <tr>
+                                            <td><?php echo $user['user_id']; ?></td>
+                                            <td><strong><?php echo htmlspecialchars($user['full_name']); ?></strong></td>
+                                            <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                            <td><?php echo htmlspecialchars($user['phone'] ?? 'N/A'); ?></td>
+                                            <td>
                                                 <form method="POST" style="display: inline;">
                                                     <?php echo csrfInput(); ?>
                                                     <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
-                                                    <button type="submit" name="delete_user" class="btn-sm btn-danger" 
-                                                            onclick="return confirm('Delete this user?')">
-                                                        Delete
-                                                    </button>
+                                                    <select name="role" onchange="this.form.submit()" class="form-control-sm">
+                                                        <option value="customer" <?php echo $user['role'] === 'customer' ? 'selected' : ''; ?>>Customer</option>
+                                                        <option value="staff" <?php echo $user['role'] === 'staff' ? 'selected' : ''; ?>>Staff</option>
+                                                        <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                                                    </select>
+                                                    <input type="hidden" name="update_role">
                                                 </form>
-                                            <?php else: ?>
-                                                <span class="text-muted">You</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
+                                            </td>
+                                            <td><small style="color: var(--text-light);"><?php echo date('M d, Y', strtotime($user['created_at'])); ?></small></td>
+                                            <td>
+                                                <div class="admin-actions">
+                                                    <?php if ($user['user_id'] !== $_SESSION['user_id']): ?>
+                                                        <form method="POST" style="display: inline;">
+                                                            <?php echo csrfInput(); ?>
+                                                            <input type="hidden" name="user_id" value="<?php echo $user['user_id']; ?>">
+                                                            <button type="submit" name="delete_user" class="btn btn-sm btn-danger" 
+                                                                    onclick="return confirm('Delete this user?')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-info" style="position: static;">You</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     <?php else: ?>
                         <p>No users found</p>
                     <?php endif; ?>

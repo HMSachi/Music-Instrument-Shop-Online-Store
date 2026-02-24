@@ -33,7 +33,7 @@ while ($product = $result->fetch_assoc()) {
 
 // Shipping Logic: Synchronize with cart.php (Free over £100, else £10)
 $shipping_threshold = 100.00;
-$shipping_cost = ($subtotal > $shipping_threshold) ? 0.00 : 10.00;
+$shipping_cost = ($subtotal >= $shipping_threshold) ? 0.00 : 10.00;
 $total = $subtotal + $shipping_cost;
 
 // Handle checkout
@@ -60,6 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             $conn->begin_transaction();
             
             try {
+                // Final Stock Verification
+                foreach ($cart_items as $item) {
+                    if ($item['product_type'] === 'physical') {
+                        $stock_check = preparedQuery($conn, "SELECT stock FROM products WHERE product_id = ? FOR UPDATE", [$item['product_id']], "i");
+                        $current_stock = $stock_check->fetch_assoc()['stock'];
+                        if ($current_stock < $item['quantity']) {
+                            throw new Exception("Sorry, " . $item['product_name'] . " is now out of stock or has insufficient quantity.");
+                        }
+                    }
+                }
+
                 // Create order
                 $order_sql = "INSERT INTO orders (user_id, total_amount, shipping_cost, order_status) 
                               VALUES (?, ?, ?, 'Processing')";
@@ -123,7 +134,7 @@ include 'includes/header.php';
             <div class="alert alert-error"><?php echo $error; ?></div>
         <?php endif; ?>
         
-        <div class="checkout-grid">
+        <div class="checkout-grid animate-fade-in-up">
             <!-- Checkout Form -->
             <div class="checkout-form">
                 <form method="POST" action="">

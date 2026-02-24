@@ -77,7 +77,7 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
 
 // Shipping Logic: Free over £100, else £10
 $shipping_threshold = 100.00;
-$shipping_cost = ($subtotal > $shipping_threshold || $subtotal == 0) ? 0.00 : 10.00;
+$shipping_cost = ($subtotal >= $shipping_threshold || $subtotal == 0) ? 0.00 : 10.00;
 $grand_total = $subtotal + $shipping_cost;
 
 $page_title = 'Shopping Cart - Melody Masters';
@@ -111,7 +111,7 @@ include 'includes/header.php';
                 </a>
             </div>
         <?php else: ?>
-            <div class="cart-grid">
+            <div class="cart-grid animate-fade-in-up">
                 <div class="cart-main">
                     <form method="POST" action="">
                         <?php echo csrfInput(); ?>

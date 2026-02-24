@@ -32,7 +32,7 @@ if (!isset($page_title)) {
                         <li><a href="<?php echo SITE_URL; ?>/index.php" <?php echo basename($_SERVER['PHP_SELF']) == 'index.php' ? 'class="active"' : ''; ?>>Home</a></li>
                         <li><a href="<?php echo SITE_URL; ?>/shop.php" <?php echo basename($_SERVER['PHP_SELF']) == 'shop.php' ? 'class="active"' : ''; ?>>Shop</a></li>
                         <li><a href="<?php echo SITE_URL; ?>/index.php#categories">Categories</a></li>
-                        <li><a href="#">About</a></li>
+                        <li><a href="#">About Us</a></li>
                     </ul>
                 </nav>
                 
@@ -55,7 +55,7 @@ if (!isset($page_title)) {
                             <?php else: ?>
                                 <a href="<?php echo SITE_URL; ?>/customer/dashboard.php" class="btn btn-sm btn-primary">Dashboard</a>
                             <?php endif; ?>
-                            <a href="<?php echo SITE_URL; ?>/logout.php" class="btn btn-sm btn-danger">Logout</a>
+                            <a href="<?php echo SITE_URL; ?>/logout.php" class="btn btn-sm btn-logout">Logout</a>
                         <?php else: ?>
                             <a href="<?php echo SITE_URL; ?>/login.php" class="btn btn-sm btn-login">Login</a>
                             <a href="<?php echo SITE_URL; ?>/register.php" class="btn btn-sm btn-register">Register</a>
