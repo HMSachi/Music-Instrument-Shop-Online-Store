@@ -47,16 +47,23 @@ include 'includes/header.php';
 ?>
 
 <section class="hero-section">
+    <div class="hero-slider">
+        <div class="hero-slide active" style="background-image: url('assets/images/main_img.jpg');"></div>
+        <div class="hero-slide" style="background-image: url('assets/images/main_img1.jpg');"></div>
+        <div class="hero-slide" style="background-image: url('assets/images/main_img2.jpg');"></div>
+    </div>
+    <div class="hero-overlay"></div>
     <div class="container">
-        <div class="hero-content">
-            <h1>Experience the Magic of Music</h1>
-            <p>Discover a world-class collection of premium instruments tailored for Every artist, from beginner to professional.</p>
+        <div class="hero-content animate-fade-in-up">
+            <span class="badge mb-3 animate-float" style="position: static; display: inline-block; margin-bottom: 1rem; background: rgba(255, 161, 255, 0.15); color: var(--primary-dark); border: 1px solid var(--primary-light);">Premium Collection 2026</span>
+            <h1>Crafting the <br>Future of <span>Sound</span></h1>
+            <p>Experience the magic of world-class instruments. From hand-picked acoustic classics to cutting-edge digital workstations.</p>
             <div class="hero-btns">
-                <a href="shop.php" class="btn btn-primary btn-large">
-                    <i class="fas fa-shopping-bag"></i> Explore Shop
+                <a href="shop.php" class="btn btn-primary btn-large animate-pulse-glow">
+                    <i class="fas fa-shopping-bag"></i> Start Shopping
                 </a>
                 <a href="#categories" class="btn btn-secondary btn-large">
-                    View Categories
+                    Explore Categories
                 </a>
             </div>
         </div>
@@ -80,9 +87,12 @@ include 'includes/header.php';
                 elseif (strpos($cat_name, 'accessor') !== false) $icon = 'fa-headphones';
                 elseif (strpos($cat_name, 'digital') !== false || strpos($cat_name, 'sheet') !== false) $icon = 'fa-file-audio';
             ?>
-                <a href="shop.php?category=<?php echo $category['category_id']; ?>" class="category-card">
-                    <i class="fas <?php echo $icon; ?>"></i>
-                    <h3><?php echo htmlspecialchars($category['category_name']); ?></h3>
+                <a href="shop.php?category=<?php echo $category['category_id']; ?>" class="category-card glass-card animate-fade-in-up" style="text-decoration: none; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);">
+                    <div class="category-icon" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 2rem; background: hsla(var(--p-h), 83%, 53%, 0.1); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 1.5rem;">
+                        <i class="fas <?php echo $icon; ?>"></i>
+                    </div>
+                    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--heading); margin: 0;"><?php echo htmlspecialchars($category['category_name']); ?></h3>
+                    <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem;">Explore Collection</p>
                 </a>
             <?php endwhile; ?>
         </div>
@@ -91,10 +101,18 @@ include 'includes/header.php';
 
 <section class="promo-banner">
     <div class="container">
-        <div class="promo-content">
-            <h2>Special Offer: 20% Off All Accessories!</h2>
-            <p>Upgrade your setup with our premium collection of strings, picks, and cases. Limited time only.</p>
-            <a href="shop.php?category=6" class="btn btn-secondary btn-large">Claim Offer</a>
+        <div class="promo-card animate-fade-in-up">
+            <div class="promo-text">
+                <span class="badge badge-accent">Limited Time Only</span>
+                <h2>Elevate Your Performance</h2>
+                <p>Enjoy up to <strong>20% off</strong> on all premium accessories and studio gear. Precision-crafted for those who demand excellence.</p>
+                <div class="promo-actions">
+                    <a href="shop.php?category=6" class="btn btn-primary btn-large">Claim 20% Discount</a>
+                </div>
+            </div>
+            <div class="promo-visual">
+                <i class="fas fa-music animate-float"></i>
+            </div>
         </div>
     </div>
 </section>
@@ -147,25 +165,25 @@ include 'includes/header.php';
 <section class="features-section">
     <div class="container">
         <div class="features-grid">
-            <div class="feature-card">
-                <i class="fas fa-shipping-fast"></i>
-                <h3>Free Shipping</h3>
-                <p>On orders over ₱5,000</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.1s; padding: 4rem 3rem;">
+                <i class="fas fa-shipping-fast" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
+                <h3 style="font-weight: 800; margin-bottom: 1rem;">Global Logistics</h3>
+                <p style="color: var(--text-light); font-size: 1.05rem;">Free Shipping over £100</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-shield-alt"></i>
-                <h3>Secure Store</h3>
-                <p>100% safe transactions</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.2s; padding: 4rem 3rem;">
+                <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
+                <h3 style="font-weight: 800; margin-bottom: 1rem;">Secure Vault</h3>
+                <p style="color: var(--text-light); font-size: 1.05rem;">End-to-End Encryption</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-award"></i>
-                <h3>Premium Quality</h3>
-                <p>Handpicked instruments</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.3s; padding: 4rem 3rem;">
+                <i class="fas fa-award" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
+                <h3 style="font-weight: 800; margin-bottom: 1rem;">Prime Quality</h3>
+                <p style="color: var(--text-light); font-size: 1.05rem;">Luthier Tested</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-undo"></i>
-                <h3>30-Day Returns</h3>
-                <p>Money back guarantee</p>
+            <div class="feature-card glass-card interactive-card animate-fade-in-up" style="animation-delay: 0.4s; padding: 4rem 3rem;">
+                <i class="fas fa-undo" style="font-size: 2.5rem; color: #FFA1FF; margin-bottom: 2rem; transition: all 0.3s ease; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: rgba(255, 161, 255, 0.05); border-radius: 50%;"></i>
+                <h3 style="font-weight: 800; margin-bottom: 1rem;">Purity Seal</h3>
+                <p style="color: var(--text-light); font-size: 1.05rem;">Lifetime Integrity</p>
             </div>
         </div>
     </div>

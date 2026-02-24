@@ -208,7 +208,16 @@ include '../includes/header.php';
                         
                         <div class="form-group">
                             <label for="image">Image URL</label>
-                            <input type="text" id="image" name="image" value="<?php echo $edit_product ? htmlspecialchars($edit_product['image']) : ''; ?>" placeholder="assets/images/product.jpg">
+                            <input type="text" id="image" name="image" value="<?php echo $edit_product ? htmlspecialchars($edit_product['image']) : ''; ?>" placeholder="assets/images/product.jpg" oninput="updateImagePreview(this.value)">
+                            <div class="asset-suggestion-list">
+                                <span class="asset-tag" onclick="setImageUrl('assets/images/Digital Piano 88 Keys.jpg')">Digital Piano</span>
+                                <span class="asset-tag" onclick="setImageUrl('assets/images/Drum Kit 5-Piece.jpg')">Drum Kit</span>
+                                <span class="asset-tag" onclick="setImageUrl('assets/images/Sepina.jpg')">Sepina</span>
+                                <span class="asset-tag" onclick="setImageUrl('assets/images/Theory Course (Digital).jpg')">Theory</span>
+                            </div>
+                            <div class="image-preview-container">
+                                <img id="image-preview" src="<?php echo SITE_URL; ?>/<?php echo $edit_product ? ($edit_product['image'] ?: 'assets/images/placeholder.jpg') : 'assets/images/placeholder.jpg'; ?>" alt="Preview">
+                            </div>
                         </div>
                         
                         <?php if ($edit_product): ?>
@@ -229,64 +238,66 @@ include '../includes/header.php';
                     <h2>All Products</h2>
                     
                     <?php if ($products && $products->num_rows > 0): ?>
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Image</th>
-                                    <th>Product</th>
-                                    <th>Price</th>
-                                    <th>Stock</th>
-                                    <th>Type</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($product = $products->fetch_assoc()): 
-                                    $is_low_stock = ($product['stock'] <= 5 && $product['product_type'] === 'physical');
-                                ?>
-                                    <tr class="<?php echo $is_low_stock ? 'row-warning' : ''; ?>">
-                                        <td><?php echo $product['product_id']; ?></td>
-                                        <td>
-                                            <div class="admin-product-thumb">
-                                                <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
-                                                     alt="thumb"
-                                                     onerror="this.src='<?php echo SITE_URL; ?>/assets/images/placeholder.jpg';">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <strong><?php echo htmlspecialchars($product['product_name']); ?></strong><br>
-                                            <small><?php echo htmlspecialchars($product['brand']); ?></small>
-                                        </td>
-                                        <td><?php echo formatPrice($product['price']); ?></td>
-                                        <td>
-                                            <?php echo $product['stock']; ?>
-                                            <?php if ($is_low_stock): ?>
-                                                <br><span class="badge badge-danger">Low Stock</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <span class="badge badge-<?php echo $product['product_type'] === 'digital' ? 'info' : 'success'; ?>">
-                                                <?php echo ucfirst($product['product_type']); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="admin-actions">
-                                                <a href="?edit=<?php echo $product['product_id']; ?>" class="btn-sm btn-outline">Edit</a>
-                                                <form method="POST" style="display: inline;">
-                                                    <?php echo csrfInput(); ?>
-                                                    <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
-                                                    <button type="submit" name="delete_product" class="btn-sm btn-danger" 
-                                                            onclick="return confirm('Delete this product?')">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Image</th>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Type</th>
+                                        <th>Actions</th>
                                     </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php while ($product = $products->fetch_assoc()): 
+                                        $is_low_stock = ($product['stock'] <= 5 && $product['product_type'] === 'physical');
+                                    ?>
+                                        <tr class="<?php echo $is_low_stock ? 'row-warning' : ''; ?>">
+                                            <td><?php echo $product['product_id']; ?></td>
+                                            <td>
+                                                <div class="admin-product-thumb">
+                                                    <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
+                                                         alt="thumb"
+                                                         onerror="this.src='<?php echo SITE_URL; ?>/assets/images/placeholder.jpg';">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong><?php echo htmlspecialchars($product['product_name']); ?></strong><br>
+                                                <small style="color: var(--text-light);"><?php echo htmlspecialchars($product['brand']); ?></small>
+                                            </td>
+                                            <td><?php echo formatPrice($product['price']); ?></td>
+                                            <td>
+                                                <strong><?php echo $product['stock']; ?></strong>
+                                                <?php if ($is_low_stock): ?>
+                                                    <br><span class="badge badge-danger" style="position: static; padding: 2px 8px; font-size: 0.7rem;">Low Stock</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-<?php echo $product['product_type'] === 'digital' ? 'info' : 'success'; ?>" style="position: static;">
+                                                    <?php echo ucfirst($product['product_type']); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="admin-actions">
+                                                    <a href="?edit=<?php echo $product['product_id']; ?>" class="btn btn-sm btn-outline">Edit</a>
+                                                    <form method="POST" style="display: inline;">
+                                                        <?php echo csrfInput(); ?>
+                                                        <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
+                                                        <button type="submit" name="delete_product" class="btn btn-sm btn-danger" 
+                                                                onclick="return confirm('Delete this product?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     <?php else: ?>
                         <p>No products found</p>
                     <?php endif; ?>

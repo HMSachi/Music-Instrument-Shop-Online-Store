@@ -116,7 +116,7 @@ include 'includes/header.php';
 <section class="product-detail-section">
     <div class="container">
         
-        <div class="product-detail-grid">
+        <div class="product-detail-grid animate-fade-in-up">
             <!-- Product Image -->
             <div class="product-detail-image">
                 <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
@@ -180,7 +180,7 @@ include 'includes/header.php';
             </div>
         </div>
         
-        <div class="reviews-section">
+        <div class="reviews-section animate-fade-in-up">
             <div class="section-header">
                 <h2>Customer Feedback</h2>
                 <span class="reviews-total"><?php echo $total_reviews; ?> Verified Reviews</span>

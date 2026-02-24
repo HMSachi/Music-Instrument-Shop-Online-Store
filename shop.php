@@ -100,7 +100,7 @@ include 'includes/header.php';
         </div>
         
 
-        <div class="shop-layout">
+        <div class="shop-layout animate-fade-in-up">
             <!-- Sidebar -->
             <aside class="shop-sidebar">
                 <div class="sidebar-section">

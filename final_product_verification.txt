@@ -1,0 +1,7 @@
+1|Fender Acoustic Guitar|assets/images/guitars1.png
+2|Electric Guitar - Stratocaster|assets/images/guitars2.jpg
+3|Digital Piano 88 Keys|assets/images/Digital Piano 88 Keys.jpg
+4|Drum Kit 5-Piece Professional|assets/images/Drum Kit 5-Piece.jpg
+5|Digital Piano 88 Keys (Special Edition)|assets/images/Digital Piano 88 Keys1.webp
+6|Music Master - Theory Course (Digital)|assets/images/placeholder.jpg
+7|Sepina Premium Keyboard|assets/images/Sepina.jpg

@@ -38,11 +38,12 @@ include '../includes/header.php';
         <div class="dashboard-grid">
             <!-- Sidebar -->
             <aside class="dashboard-sidebar">
-                <div class="user-profile">
-                    <i class="fas fa-user-shield"></i>
+                <div class="user-profile animate-fade-in-up">
+                    <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;">
+                        <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
+                    </div>
                     <h3><?php echo htmlspecialchars($user['full_name']); ?></h3>
-                    <p><?php echo htmlspecialchars($user['email']); ?></p>
-                    <span class="badge badge-info"><?php echo ucfirst($user['role']); ?></span>
+                    <span class="badge badge-info" style="position: static; display: inline-block; margin-top: 0.5rem;"><?php echo ucfirst($user['role']); ?></span>
                 </div>
                 
                 <nav class="dashboard-nav">
@@ -62,8 +63,8 @@ include '../includes/header.php';
                 <?php if ($tab === 'orders'): ?>
                     <div class="content-section">
                         <h2><i class="fas fa-shipping-fast"></i> Order Management</h2>
-                        <div class="table-responsive">
-                            <table class="admin-table">
+                        <div class="table-container">
+                            <table>
                                 <thead>
                                     <tr>
                                         <th>Order</th>
@@ -79,7 +80,7 @@ include '../includes/header.php';
                                             <td>#<?php echo $order['order_id']; ?></td>
                                             <td>
                                                 <strong><?php echo htmlspecialchars($order['full_name']); ?></strong><br>
-                                                <small><?php echo date('M d, Y', strtotime($order['order_date'])); ?></small>
+                                                <small style="color: var(--text-light);"><?php echo date('M d, Y', strtotime($order['order_date'])); ?></small>
                                             </td>
                                             <form action="process_actions.php" method="POST">
                                                 <?php echo csrfInput(); ?>
@@ -97,7 +98,7 @@ include '../includes/header.php';
                                                 <td>
                                                     <input type="text" name="tracking_number" 
                                                            value="<?php echo htmlspecialchars($order['tracking_number'] ?? ''); ?>" 
-                                                           placeholder="Unassigned" class="form-control-sm">
+                                                           placeholder="Unassigned" class="form-control-sm" style="width: 120px;">
                                                 </td>
                                                 <td>
                                                     <button type="submit" class="btn btn-sm btn-primary">Update</button>
@@ -113,8 +114,8 @@ include '../includes/header.php';
                 <?php elseif ($tab === 'inventory'): ?>
                     <div class="content-section">
                         <h2><i class="fas fa-warehouse"></i> Stock Management</h2>
-                        <div class="table-responsive">
-                            <table class="admin-table">
+                        <div class="table-container">
+                            <table>
                                 <thead>
                                     <tr>
                                         <th>Product</th>
@@ -125,18 +126,20 @@ include '../includes/header.php';
                                 </thead>
                                 <tbody>
                                     <?php while ($product = $products->fetch_assoc()): ?>
-                                        <tr class="<?php echo $product['stock'] <= 5 ? 'vibrate-slow' : ''; ?>">
+                                        <tr class="<?php echo $product['stock'] <= 5 ? 'row-warning' : ''; ?>">
                                             <td>
-                                                <div class="product-cell">
-                                                    <img src="<?php echo SITE_URL; ?>/<?php echo $product['image']; ?>" class="thumb-sm" alt="">
+                                                <div class="product-cell" style="display: flex; align-items: center; gap: 1rem;">
+                                                    <div class="admin-product-thumb" style="width: 40px; height: 40px;">
+                                                        <img src="<?php echo SITE_URL; ?>/<?php echo $product['image']; ?>" alt="">
+                                                    </div>
                                                     <div>
                                                         <strong><?php echo htmlspecialchars($product['product_name']); ?></strong><br>
-                                                        <small><?php echo htmlspecialchars($product['brand']); ?></small>
+                                                        <small style="color: var(--text-light);"><?php echo htmlspecialchars($product['brand']); ?></small>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge <?php echo $product['stock'] <= 5 ? 'badge-danger' : 'badge-success'; ?>">
+                                                <span class="badge <?php echo $product['stock'] <= 5 ? 'badge-danger' : 'badge-success'; ?>" style="position: static;">
                                                     <?php echo $product['stock']; ?>
                                                 </span>
                                             </td>
@@ -149,7 +152,7 @@ include '../includes/header.php';
                                                            min="0" class="form-control-sm" style="width: 80px;">
                                                 </td>
                                                 <td>
-                                                    <button type="submit" class="btn btn-sm btn-secondary">Update Stock</button>
+                                                    <button type="submit" class="btn btn-sm btn-secondary">Update</button>
                                                 </td>
                                             </form>
                                         </tr>

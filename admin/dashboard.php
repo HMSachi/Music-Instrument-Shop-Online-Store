@@ -52,7 +52,7 @@ include '../includes/header.php';
             <h1><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
         </div>
         
-        <div class="admin-layout">
+        <div class="admin-layout animate-fade-in-up">
             <!-- Sidebar -->
             <aside class="admin-sidebar">
                 <nav class="admin-nav">
@@ -78,7 +78,7 @@ include '../includes/header.php';
             <div class="admin-content">
                 <!-- Stats Cards -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card animate-fade-in-up">
                         <div class="stat-icon" style="background: #3498db;">
                             <i class="fas fa-box"></i>
                         </div>
@@ -88,7 +88,7 @@ include '../includes/header.php';
                         </div>
                     </div>
                     
-                    <div class="stat-card">
+                    <div class="stat-card animate-fade-in-up">
                         <div class="stat-icon" style="background: #2ecc71;">
                             <i class="fas fa-users"></i>
                         </div>
@@ -98,7 +98,7 @@ include '../includes/header.php';
                         </div>
                     </div>
                     
-                    <div class="stat-card">
+                    <div class="stat-card animate-fade-in-up">
                         <div class="stat-icon" style="background: #f39c12;">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
@@ -135,36 +135,38 @@ include '../includes/header.php';
                         <h2>Recent Orders</h2>
                         
                         <?php if ($recent_orders && $recent_orders->num_rows > 0): ?>
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>Order ID</th>
-                                        <th>Customer</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while ($order = $recent_orders->fetch_assoc()): ?>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td>#<?php echo $order['order_id']; ?></td>
-                                            <td><?php echo htmlspecialchars($order['full_name']); ?></td>
-                                            <td><?php echo formatPrice($order['total_amount']); ?></td>
-                                            <td>
-                                                <span class="badge badge-<?php echo strtolower($order['order_status']); ?>">
-                                                    <?php echo $order['order_status']; ?>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <a href="manage_orders.php?view=<?php echo $order['order_id']; ?>" class="btn-sm btn-primary">
-                                                    View
-                                                </a>
-                                            </td>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
                                         </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($order = $recent_orders->fetch_assoc()): ?>
+                                            <tr>
+                                                <td>#<?php echo $order['order_id']; ?></td>
+                                                <td><?php echo htmlspecialchars($order['full_name']); ?></td>
+                                                <td><?php echo formatPrice($order['total_amount']); ?></td>
+                                                <td>
+                                                    <span class="badge badge-<?php echo strtolower($order['order_status']); ?>">
+                                                        <?php echo $order['order_status']; ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="manage_orders.php?view=<?php echo $order['order_id']; ?>" class="btn btn-sm btn-primary">
+                                                        View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         <?php else: ?>
                             <p>No orders yet</p>
                         <?php endif; ?>

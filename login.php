@@ -83,8 +83,9 @@ include 'includes/header.php';
 ?>
 
 <div class="auth-container">
-    <div class="auth-box">
-        <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+    <div class="auth-box animate-fade-in-up">
+        <h2>Welcome Back</h2>
+        <p style="text-align: center; color: var(--text-light); margin-top: -2rem; margin-bottom: 3rem;">Sign in to continue to Melody Masters.</p>
         
         <?php if ($error): ?>
             <div class="alert alert-error">
@@ -95,25 +96,25 @@ include 'includes/header.php';
         <form method="POST" action="" id="loginForm">
             <?php echo csrfInput(); ?>
             <div class="form-group">
-                <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
+                <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required 
                        placeholder="example@mail.com"
                        value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
             </div>
             
             <div class="form-group">
-                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required 
-                       placeholder="Enter your password" minlength="6">
+                       placeholder="Enter your password">
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block">
-                <i class="fas fa-sign-in-alt"></i> Login
+            <button type="submit" class="btn btn-primary btn-block btn-large">
+                <i class="fas fa-sign-in-alt"></i> Sign In
             </button>
         </form>
         
         <div class="auth-footer">
-            <p>Don't have an account? <a href="register.php">Register here</a></p>
+            <p>New to Melody Masters? <a href="register.php">Create Account</a></p>
         </div>
     </div>
 </div>

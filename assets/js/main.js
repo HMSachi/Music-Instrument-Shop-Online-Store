@@ -126,8 +126,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     priceElements.forEach(element => {
         const text = element.textContent;
-        if (!text.includes('₱') && !isNaN(parseFloat(text))) {
-            element.textContent = '₱' + parseFloat(text).toFixed(2);
+        if (!text.includes('£') && !isNaN(parseFloat(text))) {
+            element.textContent = '£' + parseFloat(text).toFixed(2);
         }
     });
 
@@ -177,30 +177,30 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+    // Hero Slider Logic
+    const slides = document.querySelectorAll('.hero-slide');
+    if (slides.length > 0) {
+        let currentSlide = 0;
+        const slideInterval = setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 5000);
+    }
 });
 
-// Helper functions
-function showAlert(message, type = 'success') {
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.textContent = message;
-
-    const container = document.querySelector('.container');
-    if (container) {
-        container.insertBefore(alert, container.firstChild);
-
-        setTimeout(() => {
-            alert.style.transition = 'opacity 0.5s';
-            alert.style.opacity = '0';
-            setTimeout(() => alert.remove(), 500);
-        }, 3000);
+// Admin Image Preview
+function updateImagePreview(url) {
+    const preview = document.getElementById('image-preview');
+    if (preview) {
+        preview.src = SITE_URL + '/' + (url.trim() || 'assets/images/placeholder.jpg');
     }
 }
 
-function formatPrice(price) {
-    return '₱' + parseFloat(price).toFixed(2);
+function setImageUrl(url) {
+    const input = document.getElementById('image');
+    if (input) {
+        input.value = url;
+        updateImagePreview(url);
+    }
 }
-
-// Console welcome message
-console.log('%cWelcome to Melody Masters! 🎵', 'color: #3498db; font-size: 20px; font-weight: bold;');
-console.log('%cYour premier music instrument shop', 'color: #2ecc71; font-size: 14px;');
