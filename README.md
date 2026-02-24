@@ -1,286 +1,219 @@
-# Melody Masters - Online Music Instrument Shop
-## Complete Web Application System
+# Melody Masters - Music Instrument Shop
 
-A full-stack web application for managing an online music instrument shop with admin, staff, and customer roles.
+A complete e-commerce platform for selling musical instruments built with PHP and MySQL.
 
----
+## Features
 
-## 📋 Table of Contents
-- [Features](#features)
-- [System Requirements](#system-requirements)
-- [Installation & Setup](#installation--setup)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [User Roles & Access](#user-roles--access)
-- [Database Schema](#database-schema)
-- [Configuration](#configuration)
-- [Testing Credentials](#testing-credentials)
+✅ **User Management**
+- Customer registration and login
+- Role-based access (Admin, Staff, Customer)
+- Profile management
 
----
+✅ **Product Catalog**
+- Browse products by categories
+- Search functionality
+- Product details with reviews and ratings
+- Digital and physical products
 
-## ✨ Features
+✅ **Shopping Cart**
+- Add/remove items
+- Update quantities
+- Real-time cart management
 
-### Admin Features
-- Complete product management (Add, Edit, Delete products)
-- View and manage all registered users
-- Assign user roles (Admin, Staff, Customer)
-- Deactivate user accounts
-- Access to all system functions
+✅ **Order Management**
+- Checkout process
+- Order tracking
+- Order history
 
-### Staff Features
-- View all products
-- Update inventory/stock quantities
-- View and process customer orders
-- Update order status (Pending, Processing, Shipped, Delivered, Cancelled)
-- Access order details and customer information
+✅ **Admin Panel**
+- Dashboard with statistics
+- Product management (CRUD)
+- User management
+- Order management with status updates
 
-### Customer Features
-- Browse products by category
-- Search products
-- View detailed product information with customer reviews
-- Add products to shopping cart
-- Manage shopping cart (update quantities, remove items)
-- Checkout and place orders
-- View order history and order details
-- Free shipping on orders over £100
-- Digital product instant download access
-- View product ratings and reviews
+✅ **Responsive Design**
+- Mobile-friendly interface
+- Clean and modern UI
+- Font Awesome icons
 
-### General Features
-- Secure user authentication (password hashing with bcrypt)
-- Session-based login system
-- Role-based access control (RBAC)
-- Responsive design (works on desktop, tablet, mobile)
-- Product categorisation
-- Physical and digital product support
-- Order management system
-- Real-time inventory tracking
-- User-friendly interface with Flexbox/Grid layouts
+## Installation
 
----
+### Prerequisites
+- XAMPP (or any PHP/MySQL environment)
+- PHP 7.4 or higher
+- MySQL 5.7 or higher
 
-## 💻 System Requirements
+### Setup Instructions
 
-- Web Server: Apache with PHP support
-- PHP Version: 7.4 or higher
-- Database: MySQL 5.7 or higher
-- Browser: Modern browser (Chrome, Firefox, Safari, Edge)
+1. **Start XAMPP**
+   - Start Apache and MySQL servers
 
-Recommended: XAMPP (Apache, PHP, MySQL)
+2. **Create Database**
+   - Open phpMyAdmin (http://localhost/phpmyadmin)
+   - Create a new database named `music_shop`
+   - Import the database schema from `database/database.sql`
 
----
+3. **Configure Database Connection**
+   - Open `config/database.php`
+   - Update database credentials if needed:
+     ```php
+     define('DB_HOST', 'localhost');
+     define('DB_USER', 'root');
+     define('DB_PASS', '');
+     define('DB_NAME', 'music_shop');
+     ```
 
-## 🚀 Installation & Setup
+4. **Update Site URL**
+   - Open `config/config.php`
+   - Update the SITE_URL constant:
+     ```php
+     define('SITE_URL', 'http://localhost/Music-Instrument-Shop-Online-Store');
+     ```
 
-### 1) Database Setup
-1. Open phpMyAdmin (http://localhost/phpmyadmin).
-2. Create database `melody_masters` with collation `utf8mb4_unicode_ci`.
-3. Import `database/database.sql` into `melody_masters`.
+5. **Access the Application**
+   - Open your browser and go to: http://localhost/Music-Instrument-Shop-Online-Store
 
-### 2) File Structure
-Place the project in:
-```
-c:/xampp/htdocs/Music-Instrument-Shop-Online-Store/
-```
+## Default Admin Account
 
-Ensure the structure:
-```
-admin/
-assets/css/style.css
-assets/images/products/
-customer/
-database/database.sql
-includes/auth.php
-includes/db_connection.php
-includes/order_manager.php
-includes/product_manager.php
-includes/session.php
-public/logout.php
-staff/
-cart.php
-checkout.php
-index.php
-login.php
-order_confirmation.php
-product.php
-products.php
-signup.php
-README.md
+After importing the database, you can create an admin account by:
+
+1. Register a new account through the registration page
+2. Go to phpMyAdmin
+3. Find your user in the `users` table
+4. Change the `role` field to `admin`
+
+OR run this SQL query (replace email with your registered email):
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';
 ```
 
-### 3) Configure Database Connection
-Edit `includes/db_connection.php` if needed:
-```php
-$host = 'localhost';
-$dbname = 'melody_masters';
-$username = 'root';
-$password = '';
+## Adding Sample Data
+
+### Add Categories
+```sql
+INSERT INTO categories (category_name) VALUES 
+('Guitars'),
+('Keyboards'),
+('Drums'),
+('Accessories'),
+('Digital Sheet Music');
 ```
 
-### 4) Product Images
-Create `assets/images/products/` and place product images matching filenames in the database seeds.
+### Add Sample Products
+```sql
+INSERT INTO products (category_id, product_name, brand, description, price, stock, product_type, image) VALUES
+(1, 'Acoustic Guitar', 'Yamaha', 'Professional acoustic guitar with rich sound quality', 15000.00, 10, 'physical', 'assets/images/guitar.jpg'),
+(2, 'Digital Piano', 'Casio', '88-key digital piano with weighted keys', 35000.00, 5, 'physical', 'assets/images/piano.jpg'),
+(3, 'Drum Set', 'Pearl', 'Complete 5-piece drum set for beginners', 25000.00, 3, 'physical', 'assets/images/drums.jpg'),
+(4, 'Guitar Strings', 'Ernie Ball', 'Premium guitar strings set', 500.00, 50, 'physical', 'assets/images/strings.jpg');
+```
 
-### 5) Run the App
-1. Start Apache and MySQL via XAMPP.
-2. Visit: http://localhost/Music-Instrument-Shop-Online-Store/
+## Project Structure
 
----
+```
+Music-Instrument-Shop-Online-Store/
+├── admin/                      # Admin panel pages
+│   ├── dashboard.php
+│   ├── manage_products.php
+│   ├── manage_users.php
+│   └── manage_orders.php
+├── assets/
+│   ├── css/
+│   │   └── style.css          # Main stylesheet
+│   ├── js/
+│   │   └── main.js            # JavaScript functionality
+│   └── images/                # Product images
+├── config/
+│   ├── config.php             # General configuration
+│   └── database.php           # Database connection
+├── customer/
+│   └── dashboard.php          # Customer dashboard
+├── database/
+│   └── database.sql           # Database schema
+├── includes/
+│   ├── header.php             # Header template
+│   └── footer.php             # Footer template
+├── staff/
+│   └── dashboard.php          # Staff dashboard
+├── cart.php                   # Shopping cart
+├── checkout.php               # Checkout process
+├── index.php                  # Homepage
+├── login.php                  # Login page
+├── logout.php                 # Logout handler
+├── product.php                # Product details
+├── register.php               # Registration page
+└── shop.php                   # Products listing
+```
 
-## 🛠 Technology Stack
+## Usage
 
-- Frontend: HTML5, CSS3 (Flexbox/Grid), minimal JavaScript
-- Backend: PHP 7.4+
-- Database: MySQL
-- Auth: Session-based login with bcrypt password hashing
-- Access Control: Role-Based Access Control (Admin, Staff, Customer)
+### For Customers
+1. Register an account or login
+2. Browse products by categories or search
+3. View product details and reviews
+4. Add items to cart
+5. Proceed to checkout
+6. Track orders in dashboard
 
----
+### For Admin
+1. Login with admin credentials
+2. Access admin dashboard
+3. Manage products (add, edit, delete)
+4. Manage users and their roles
+5. Process and update order status
+6. View sales statistics
 
-## 📂 Project Structure (Key Files)
+### For Staff
+1. Login with staff credentials
+2. View and manage orders
+3. Update order status
 
-- index.php — Homepage with featured products
-- login.php / signup.php — Auth flows with role selection
-- products.php — Product listing with search/filter
-- product.php — Product detail with reviews
-- cart.php — Shopping cart
-- checkout.php — Order placement
-- order_confirmation.php — Confirmation page
-- admin/dashboard.php — Product CRUD
-- admin/edit_product.php — Edit product
-- admin/users.php — User management and roles
-- staff/dashboard.php — Orders + stock updates
-- staff/order_details.php — Order detail
-- customer/dashboard.php — Account + order history
-- customer/order_details.php — Customer order detail
-- includes/*.php — DB connection, session, auth, products, orders handlers
-- assets/css/style.css — Responsive styling
+## Technologies Used
 
----
+- **Backend:** PHP (Procedural)
+- **Database:** MySQL
+- **Frontend:** HTML5, CSS3 (Flexbox & Grid)
+- **JavaScript:** Vanilla JS
+- **Icons:** Font Awesome 6
+- **Session Management:** PHP Sessions
 
-## 👥 User Roles & Access
+## Security Features
 
-### Admin
-- Full access: product CRUD, user management, inventory oversight
-- Redirect: /admin/dashboard.php
+- Password hashing using PHP `password_hash()`
+- SQL injection prevention with `real_escape_string()`
+- Session-based authentication
+- Role-based access control
+- Input validation and sanitization
 
-### Staff
-- Manage inventory, process orders, view products
-- No user management
-- Redirect: /staff/dashboard.php
+## Browser Support
 
-### Customer
-- Browse, cart, checkout, order history, digital downloads
-- Redirect: /customer/dashboard.php
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
-### Guest
-- Browse products and details only; must log in to purchase.
+## Future Enhancements
 
----
-
-## 🗄️ Database Schema
-
-### users
-- id (PK), name, email (unique), password (hashed), role (Admin/Staff/Customer), is_active, created_at
-
-### categories
-- id (PK), name (unique), description, created_at
-
-### products
-- id (PK), name, category_id (FK), price, stock, description, image, type (Physical/Digital), is_active, timestamps
-
-### orders
-- id (PK), user_id (FK), total_price, shipping_cost, order_date, status, delivery_address, phone
-
-### order_items
-- id (PK), order_id (FK), product_id (FK), quantity, price
-
-### digital_products
-- id (PK), product_id (FK, unique), download_url, file_size, license_terms
-
-### reviews
-- id (PK), product_id (FK), user_id (FK), rating (1-5), review_text, is_verified_purchase, created_at, UNIQUE(user_id, product_id)
-
----
-
-## ⚙️ Configuration
-
-- DB credentials: `includes/db_connection.php`
-- Sessions: `includes/session.php`
-- Shipping: free over £100; physical items only; otherwise £15
-- Password policy: ≥8 chars, includes uppercase and number
-
----
-
-## 🧪 Testing Credentials
-
-Seed users (from SQL):
-- admin@melodymaster.com — role Admin — set your own password via signup/reset
-- staff@melodymaster.com — role Staff — set your own password via signup/reset
-
-Create additional accounts via signup and choose role.
-
----
-
-## 🔐 Security Features
-
-- Bcrypt password hashing
-- Session-based auth with role checks
-- Input sanitisation helpers
-- Foreign keys for referential integrity
-- Role-based access control on protected pages
-
----
-
-## 📝 Usage Examples
-
-- Add product (Admin): Admin Dashboard → Add product form
-- Update stock (Staff): Staff Dashboard → Inventory table → Update stock
-- Place order (Customer): Browse → Add to cart → Checkout → Confirm
-- Order tracking: Customer Dashboard → Order history → Details
-
----
-
-## 🐛 Troubleshooting
-
-- DB connection errors: verify MySQL running and credentials correct.
-- Images missing: ensure `assets/images/products/` has referenced files.
-- Auth issues: confirm user exists and is_active=TRUE.
-- Cart/session issues: ensure cookies and PHP sessions are enabled.
-
----
-
-## 📊 Business Rules Implemented
-
-- Free shipping on orders > £100 (physical items) else £15
-- Shipping applies only to physical products
-- Digital products: available for download after payment (placeholder link support)
-- Role-based access enforced for Admin/Staff/Customer
-- Stock decremented on confirmed orders
-
----
-
-## 🚀 Future Enhancements
-
-- Payment gateway integration (Stripe/PayPal)
+- Payment gateway integration
 - Email notifications
-- Discount codes
-- Enhanced reviews with moderation
-- Wishlists and recommendations
+- Product reviews submission
+- Wishlist functionality
+- Advanced search filters
+- Product recommendations
+- Sales reports and analytics
 - Multi-language support
+- Social media integration
+
+## Support
+
+For issues or questions, please contact the administrator.
+
+## License
+
+This project is for educational purposes.
 
 ---
 
-## ✅ Project Completion Checklist
-
-- Database schema and seed data
-- Auth with role-based redirects
-- Admin product CRUD
-- Staff order + inventory tools
-- Customer shopping, cart, checkout, history
-- Responsive UI (Flexbox/Grid)
-- Security basics (hashing, sanitisation, sessions)
-
----
-
-**Version:** 1.0  
-**Last Updated:** January 20, 2026
+**Developed by:** Your Name  
+**Date:** February 2026  
+**Version:** 1.0.0

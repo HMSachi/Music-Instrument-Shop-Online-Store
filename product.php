@@ -1,229 +1,241 @@
 <?php
-require_once __DIR__ . '/includes/db_connection.php';
-require_once __DIR__ . '/includes/session.php';
-require_once __DIR__ . '/includes/product_manager.php';
+require_once 'config/config.php';
+require_once 'config/database.php';
 
-$base = BASE_PATH;
-$pm = new ProductManager($db);
+$product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$message = '';
+$error = '';
 
-if (!isset($_GET['id'])) {
-    header('Location: ' . $base . '/products.php');
+// Handle add to cart
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
+    $product_id = (int)$_POST['product_id'];
+    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
+    
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+    
+    if (isset($_SESSION['cart'][$product_id])) {
+        $_SESSION['cart'][$product_id] += $quantity;
+    } else {
+        $_SESSION['cart'][$product_id] = $quantity;
+    }
+    
+    setFlashMessage('success', 'Product added to cart!');
+    header("Location: " . $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING']);
     exit();
 }
 
-$product = $pm->get_product((int)$_GET['id']);
-if (!$product) {
-    header('Location: ' . $base . '/products.php');
+// Handle review submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
+    if (!isLoggedIn()) {
+        setFlashMessage('error', 'You must be logged in to leave a review.');
+    } else {
+        $user_id = $_SESSION['user_id'];
+        $rating = (int)$_POST['rating'];
+        $comment = $conn->real_escape_string($_POST['comment']);
+        
+        // Purchase check
+        $purchase_sql = "SELECT oi.product_id FROM order_items oi 
+                        JOIN orders o ON oi.order_id = o.order_id 
+                        WHERE o.user_id = $user_id AND oi.product_id = $product_id AND o.order_status = 'Delivered'";
+        $purchase_result = $conn->query($purchase_sql);
+        
+        if ($purchase_result && $purchase_result->num_rows > 0) {
+            $insert_review = "INSERT INTO reviews (product_id, user_id, rating, comment) VALUES ($product_id, $user_id, $rating, '$comment')";
+            if ($conn->query($insert_review)) {
+                setFlashMessage('success', 'Thank you! Your review has been posted.');
+            } else {
+                setFlashMessage('error', 'Failed to submit review. Please try again.');
+            }
+        } else {
+            setFlashMessage('error', 'Only verified buyers can review this product.');
+        }
+    }
+    header("Location: " . $_SERVER['PHP_SELF'] . "?" . $_SERVER['QUERY_STRING']);
     exit();
 }
 
-$reviews = $pm->get_product_reviews($product['product_id']);
-$rating = $pm->get_average_rating($product['product_id']);
+// Fetch product details
+$sql = "SELECT p.*, c.category_name FROM products p 
+        LEFT JOIN categories c ON p.category_id = c.category_id 
+        WHERE p.product_id = $product_id";
+$result = $conn->query($sql);
+
+if (!$result || $result->num_rows === 0) {
+    redirect('shop.php');
+}
+
+$product = $result->fetch_assoc();
+
+// Check if current user is a verified buyer
+$is_verified_buyer = false;
+if (isLoggedIn()) {
+    $user_id = $_SESSION['user_id'];
+    $check_purchase = "SELECT oi.product_id FROM order_items oi 
+                      JOIN orders o ON oi.order_id = o.order_id 
+                      WHERE o.user_id = $user_id AND oi.product_id = $product_id AND o.order_status = 'Delivered'";
+    $v_result = $conn->query($check_purchase);
+    if ($v_result && $v_result->num_rows > 0) {
+        $is_verified_buyer = true;
+    }
+}
+
+// Fetch reviews
+$reviews_sql = "SELECT r.*, u.full_name FROM reviews r 
+                JOIN users u ON r.user_id = u.user_id 
+                WHERE r.product_id = $product_id 
+                ORDER BY r.review_date DESC";
+$reviews = $conn->query($reviews_sql);
+
+// Calculate average rating
+$rating_sql = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM reviews WHERE product_id = $product_id";
+$rating_result = $conn->query($rating_sql);
+$rating_data = $rating_result->fetch_assoc();
+$avg_rating = round($rating_data['avg_rating'] ?? 0, 1);
+$total_reviews = $rating_data['total_reviews'];
+
+$page_title = $product['product_name'] . ' - Melody Masters';
+include 'includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($product['product_name']); ?> - Melody Masters</title>
-    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/product-detail.css">
-</head>
-<body>
-    <header class="premium-header">
-        <nav class="container">
-            <a href="<?php echo $base; ?>/index.php" class="logo">🎵 Melody Masters</a>
-            <ul class="nav-links">
-                <li><a href="<?php echo $base; ?>/products.php" class="nav-link">Products</a></li>
-                <?php if (is_logged_in()): ?>
-                    <?php if (has_role('admin')): ?>
-                        <li><a href="<?php echo $base; ?>/admin/dashboard.php" class="nav-link">Admin</a></li>
-                    <?php elseif (has_role('staff')): ?>
-                        <li><a href="<?php echo $base; ?>/staff/dashboard.php" class="nav-link">Staff</a></li>
-                    <?php else: ?>
-                        <li><a href="<?php echo $base; ?>/customer/dashboard.php" class="nav-link">My Account</a></li>
-                        <li><a href="<?php echo $base; ?>/cart.php" class="nav-link cart-link">🛒 Cart<?php if (isset($_SESSION['cart'])) echo ' <span class="cart-badge">' . count($_SESSION['cart']) . '</span>'; ?></a></li>
-                    <?php endif; ?>
-                    <li><a href="<?php echo $base; ?>/public/logout.php" class="nav-link">Logout</a></li>
-                <?php else: ?>
-                    <li><a href="<?php echo $base; ?>/login.php" class="nav-link">Login</a></li>
-                    <li><a href="<?php echo $base; ?>/signup.php" class="nav-link">Sign Up</a></li>
-                <?php endif; ?>
-            </ul>
-        </nav>
-    </header>
 
-    <main class="container">
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-nav">
-            <a href="<?php echo $base; ?>/products.php" class="breadcrumb-link">← Back to Products</a>
-        </div>
-
-        <!-- Product Container -->
-        <div class="product-detail-container">
-            <!-- Product Gallery Section -->
-            <div class="product-gallery">
-                <div class="main-image-wrapper">
-                    <?php if (!empty($product['image'])): ?>
-                        <img src="<?php echo $base; ?>/assets/images/products/<?php echo htmlspecialchars($product['image']); ?>" 
-                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                             class="main-product-image">
-                    <?php else: ?>
-                        <div class="image-placeholder">
-                            <span class="placeholder-icon">🎸</span>
-                        </div>
-                    <?php endif; ?>
-                </div>
+<section class="product-detail-section">
+    <div class="container">
+        
+        <div class="product-detail-grid">
+            <!-- Product Image -->
+            <div class="product-detail-image">
+                <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
+                     alt="<?php echo htmlspecialchars($product['product_name']); ?>"
+                     onerror="this.src='assets/images/placeholder.jpg';">
             </div>
-
-            <!-- Product Information Section -->
-            <div class="product-info-section">
-                <!-- Header -->
-                <div class="product-header">
-                    <div>
-                        <p class="product-breadcrumb"><?php echo htmlspecialchars($product['category_name'] ?? 'Category'); ?></p>
-                        <h1 class="product-title"><?php echo htmlspecialchars($product['product_name']); ?></h1>
-                    </div>
-                    <?php if (!empty($product['brand'])): ?>
-                        <div class="brand-badge">
-                            <?php echo htmlspecialchars($product['brand']); ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Rating Section -->
-                <div class="rating-section">
-                    <div class="rating-stars">
-                        <?php for ($i = 0; $i < 5; $i++): ?>
-                            <span class="star <?php echo ($i < round($rating['avg_rating'])) ? 'filled' : 'empty'; ?>">★</span>
-                        <?php endfor; ?>
-                        <span class="rating-value"><?php echo number_format($rating['avg_rating'], 1); ?></span>
-                    </div>
-                    <span class="review-count">(<?php echo (int)$rating['total_reviews']; ?> reviews)</span>
-                </div>
-
-                <!-- Price Section -->
-                <div class="price-section">
-                    <span class="price">$<?php echo number_format($product['price'], 2); ?></span>
-                </div>
-
-                <!-- Stock Status -->
-                <div class="stock-section">
-                    <?php if ($product['product_type'] === 'physical'): ?>
-                        <?php if ((int)$product['stock'] > 0): ?>
-                            <div class="stock-available">
-                                <span class="stock-indicator">●</span>
-                                <span>In Stock - <?php echo (int)$product['stock']; ?> available</span>
-                            </div>
-                        <?php else: ?>
-                            <div class="stock-unavailable">
-                                <span class="stock-indicator">●</span>
-                                <span>Out of Stock</span>
-                            </div>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <div class="stock-available">
-                            <span class="stock-indicator">●</span>
-                            <span>Digital Download - Instant Access</span>
-                        </div>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Add to Cart Section -->
-                <?php if (is_logged_in() && has_role('customer')): ?>
-                    <div class="action-section">
-                        <form method="POST" action="<?php echo $base; ?>/add_to_cart.php" class="cart-form">
-                            <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
-                            
-                            <div class="quantity-selector">
-                                <label for="quantity" class="quantity-label">Quantity:</label>
-                                <div class="qty-control">
-                                    <button type="button" class="qty-btn qty-minus" onclick="document.getElementById('quantity').stepDown()">−</button>
-                                    <input type="number" id="quantity" name="quantity" value="1" min="1" 
-                                           max="<?php echo ($product['product_type'] === 'physical') ? (int)$product['stock'] : 999; ?>" 
-                                           class="qty-input">
-                                    <button type="button" class="qty-btn qty-plus" onclick="document.getElementById('quantity').stepUp()">+</button>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-large btn-primary">
-                                <span class="btn-icon">🛒</span>
-                                <span>Add to Cart</span>
-                            </button>
-                        </form>
-                    </div>
-                <?php elseif (!is_logged_in()): ?>
-                    <div class="action-section">
-                        <a href="<?php echo $base; ?>/login.php" class="btn btn-large btn-primary">
-                            <span class="btn-icon">🔐</span>
-                            <span>Login to Purchase</span>
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Quick Info -->
-                <div class="quick-info">
-                    <div class="info-item">
-                        <span class="info-icon">📦</span>
-                        <span>Free Shipping</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-icon">🔄</span>
-                        <span>Easy Returns</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-icon">✓</span>
-                        <span>Quality Assured</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Description Section -->
-        <div class="description-section">
-            <h2 class="section-title">Product Description</h2>
-            <div class="description-content">
-                <?php echo nl2br(htmlspecialchars($product['description'])); ?>
-            </div>
-        </div>
-
-        <!-- Reviews Section -->
-        <div class="reviews-section">
-            <h2 class="section-title">Customer Reviews</h2>
             
-            <?php if (empty($reviews)): ?>
-                <div class="empty-reviews">
-                    <span class="empty-icon">💬</span>
-                    <p>No reviews yet. Be the first to review this product!</p>
+            <!-- Product Info -->
+            <div class="product-detail-info">
+                <p class="product-category">
+                    <a href="shop.php?category=<?php echo $product['category_id']; ?>">
+                        <?php echo htmlspecialchars($product['category_name']); ?>
+                    </a>
+                </p>
+                <h1><?php echo htmlspecialchars($product['product_name']); ?></h1>
+                
+                <div class="product-rating">
+                    <div class="stars">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="fas fa-star<?php echo $i <= $avg_rating ? '' : '-o'; ?>"></i>
+                        <?php endfor; ?>
+                    </div>
+                    <span class="rating-text"><?php echo $avg_rating; ?> / 5 (<?php echo $total_reviews; ?> Reviews)</span>
+                </div>
+                
+                <div class="product-meta">
+                    <p><span>Brand:</span> <?php echo htmlspecialchars($product['brand']); ?></p>
+                    <p><span>Category:</span> <?php echo htmlspecialchars($product['category_name']); ?></p>
+                    <p><span>Availability:</span> 
+                        <?php if ($product['stock'] > 0): ?>
+                            <span class="in-stock">In Stock (<?php echo $product['stock']; ?> units)</span>
+                        <?php else: ?>
+                            <span class="out-of-stock">Out of Stock</span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+                
+                <div class="product-price-box">
+                    <span class="price-label">Price</span>
+                    <span class="price"><?php echo formatPrice($product['price']); ?></span>
+                </div>
+                
+                <?php if ($product['stock'] > 0): ?>
+                    <form method="POST" action="" class="add-to-cart-form">
+                        <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
+                        <div class="quantity-selector">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" name="quantity" id="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>">
+                        </div>
+                        <button type="submit" name="add_to_cart" class="btn btn-primary btn-large btn-block">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </form>
+                <?php endif; ?>
+                
+                <div class="product-description">
+                    <h3>About this product</h3>
+                    <p><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="reviews-section">
+            <div class="section-header">
+                <h2>Customer Feedback</h2>
+                <span class="reviews-total"><?php echo $total_reviews; ?> Verified Reviews</span>
+            </div>
+            
+            <?php if ($is_verified_buyer): ?>
+                <div class="review-form-box">
+                    <h3>Write a Review</h3>
+                    <form method="POST" action="">
+                        <div class="form-group">
+                            <label>Rating</label>
+                            <div class="rating-input">
+                                <?php for ($i = 5; $i >= 1; $i--): ?>
+                                    <input type="radio" name="rating" value="<?php echo $i; ?>" id="star<?php echo $i; ?>" required>
+                                    <label for="star<?php echo $i; ?>"><i class="fas fa-star"></i></label>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="comment">Your Comment</label>
+                            <textarea name="comment" id="comment" rows="4" placeholder="Share your experience with this instrument..." required></textarea>
+                        </div>
+                        <button type="submit" name="submit_review" class="btn btn-primary">Submit Review</button>
+                    </form>
+                </div>
+            <?php elseif (isLoggedIn()): ?>
+                <div class="info-alert">
+                    <i class="fas fa-info-circle"></i> Only customers who have purchased this product can leave a review.
                 </div>
             <?php else: ?>
-                <div class="reviews-list">
-                    <?php foreach ($reviews as $review): ?>
-                        <div class="review-card">
-                            <div class="review-header">
-                                <div>
-                                    <h4 class="review-author"><?php echo htmlspecialchars($review['user_name']); ?></h4>
-                                    <div class="review-rating">
-                                        <?php for ($i = 0; $i < 5; $i++): ?>
-                                            <span class="star <?php echo ($i < (int)$review['rating']) ? 'filled' : 'empty'; ?>">★</span>
-                                        <?php endfor; ?>
-                                    </div>
-                                </div>
-                                <span class="review-date"><?php echo date('M d, Y', strtotime($review['review_date'])); ?></span>
-                            </div>
-                            <p class="review-comment"><?php echo htmlspecialchars($review['comment']); ?></p>
-                        </div>
-                    <?php endforeach; ?>
+                <div class="info-alert">
+                    <i class="fas fa-user-lock"></i> Please <a href="login.php">login</a> to see if you can review this product.
                 </div>
             <?php endif; ?>
-        </div>
-    </main>
 
-    <footer class="premium-footer">
-        <div class="footer-content">
-            <p>&copy; 2026 Melody Masters. All rights reserved.</p>
-            <p class="footer-tagline">Your Ultimate Music Store</p>
+            <div class="reviews-list">
+                <?php if ($reviews && $reviews->num_rows > 0): ?>
+                    <?php while ($review = $reviews->fetch_assoc()): ?>
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="avatar"><?php echo strtoupper(substr($review['full_name'], 0, 1)); ?></div>
+                                    <div>
+                                        <strong><?php echo htmlspecialchars($review['full_name']); ?></strong>
+                                        <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Purchase</span>
+                                    </div>
+                                </div>
+                                <div class="review-meta">
+                                    <div class="review-stars">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <i class="fas fa-star <?php echo $i <= $review['rating'] ? 'active' : ''; ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <span class="review-date"><?php echo date('M d, Y', strtotime($review['review_date'])); ?></span>
+                                </div>
+                            </div>
+                            <div class="review-body">
+                                <p><?php echo nl2br(htmlspecialchars($review['comment'])); ?></p>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="no-reviews">
+                        <i class="far fa-comments"></i>
+                        <p>No reviews yet. Be the first to share your thoughts!</p>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
-    </footer>
-</body>
-</html>
+    </div>
+</section>
+
+<?php include 'includes/footer.php'; ?>
