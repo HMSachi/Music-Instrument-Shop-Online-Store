@@ -111,13 +111,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Mobile menu toggle (if needed)
+    // Mobile menu toggle
     const menuToggle = document.querySelector('.menu-toggle');
     const mainNav = document.querySelector('.main-nav');
 
     if (menuToggle && mainNav) {
         menuToggle.addEventListener('click', function () {
+            this.classList.toggle('active');
             mainNav.classList.toggle('active');
+
+            // Toggle icon
+            const icon = this.querySelector('i');
+            if (this.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
         });
     }
 
@@ -173,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 button.disabled = true;
 
                 // Use a non-disruptive spinner that keeps the button's footprint
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Wait...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--bg-dark);"></i> Wait...';
             }
         });
     });

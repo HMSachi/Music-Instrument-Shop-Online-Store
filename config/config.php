@@ -27,9 +27,10 @@ if (session_status() === PHP_SESSION_NONE) {
     $_SESSION['last_activity'] = time();
 
     // Session Fingerprinting (Prevent Hijacking)
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'CLI-Agent';
     if (!isset($_SESSION['user_agent'])) {
-        $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-    } elseif ($_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']) {
+        $_SESSION['user_agent'] = $user_agent;
+    } elseif ($_SESSION['user_agent'] !== $user_agent) {
         session_unset();
         session_destroy();
         session_start();

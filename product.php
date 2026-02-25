@@ -113,10 +113,9 @@ $page_title = $product['product_name'] . ' - Melody Masters';
 include 'includes/header.php';
 ?>
 
-<section class="product-detail-section">
+<section class="product-detail-section" style="padding: 8rem 0;">
     <div class="container">
-        
-        <div class="product-detail-grid animate-fade-in-up">
+        <div class="product-detail-grid animate-fade-in">
             <!-- Product Image -->
             <div class="product-detail-image">
                 <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
@@ -126,127 +125,146 @@ include 'includes/header.php';
             
             <!-- Product Info -->
             <div class="product-detail-info">
-                <p class="product-category">
-                    <a href="shop.php?category=<?php echo $product['category_id']; ?>">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <span style="background: rgba(212, 175, 55, 0.1); color: var(--primary); padding: 0.4rem 1rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
                         <?php echo htmlspecialchars($product['category_name']); ?>
-                    </a>
-                </p>
-                <h1><?php echo htmlspecialchars($product['product_name']); ?></h1>
-                
-                <div class="product-rating">
-                    <div class="stars">
-                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                            <i class="fas fa-star<?php echo $i <= $avg_rating ? '' : '-o'; ?>"></i>
-                        <?php endfor; ?>
-                    </div>
-                    <span class="rating-text"><?php echo $avg_rating; ?> / 5 (<?php echo $total_reviews; ?> Reviews)</span>
+                    </span>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Brand: <?php echo htmlspecialchars($product['brand']); ?></span>
                 </div>
                 
-                <div class="product-meta">
-                    <p><span>Brand:</span> <?php echo htmlspecialchars($product['brand']); ?></p>
-                    <p><span>Category:</span> <?php echo htmlspecialchars($product['category_name']); ?></p>
-                    <p><span>Availability:</span> 
-                        <?php if ($product['stock'] > 0): ?>
-                            <span class="in-stock">In Stock (<?php echo $product['stock']; ?> units)</span>
-                        <?php else: ?>
-                            <span class="out-of-stock">Out of Stock</span>
-                        <?php endif; ?>
-                    </p>
+                <h1 class="text-gold" style="margin-bottom: 1.5rem;"><?php echo htmlspecialchars($product['product_name']); ?></h1>
+                
+                <div class="product-rating" style="margin-bottom: 2.5rem;">
+                    <div class="review-stars">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <i class="fas fa-star <?php echo $i <= $avg_rating ? 'active' : ''; ?>"></i>
+                        <?php endfor; ?>
+                        <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 0.5rem;">
+                            <?php echo $avg_rating; ?> / 5 (<?php echo $total_reviews; ?> reviews)
+                        </span>
+                    </div>
                 </div>
                 
                 <div class="product-price-box">
-                    <span class="price-label">Price</span>
+                    <span class="price-label">Investment</span>
                     <span class="price"><?php echo formatPrice($product['price']); ?></span>
                 </div>
                 
+                <div class="stock-status" style="margin-bottom: 2.5rem;">
+                    <?php if ($product['stock'] > 0): ?>
+                        <span style="color: var(--success); display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-check-circle"></i> In Stock & Ready to Ship (<?php echo $product['stock']; ?> available)
+                        </span>
+                    <?php else: ?>
+                        <span style="color: var(--error); display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                            <i class="fas fa-times-circle"></i> Currently Out of Stock
+                        </span>
+                    <?php endif; ?>
+                </div>
+                
                 <?php if ($product['stock'] > 0): ?>
-                    <form method="POST" action="" class="add-to-cart-form">
+                    <form method="POST" action="" class="glass-card" style="padding: 2.5rem; margin-bottom: 3rem; background: rgba(255,255,255,0.02);">
                         <?php echo csrfInput(); ?>
                         <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
-                        <div class="quantity-selector">
-                            <label for="quantity">Quantity</label>
-                            <input type="number" name="quantity" id="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>">
+                        
+                        <div style="display: flex; gap: 1.5rem; align-items: flex-end;">
+                            <div class="form-group" style="margin: 0;">
+                                <label class="form-label" for="quantity">Quantity</label>
+                                <input type="number" name="quantity" id="quantity" class="form-control" style="width: 100px; text-align: center;" value="1" min="1" max="<?php echo $product['stock']; ?>">
+                            </div>
+                            <button type="submit" name="add_to_cart" class="btn btn-primary" style="flex: 1; height: 52px;">
+                                <i class="fas fa-shopping-bag"></i> Add to Purchase
+                            </button>
                         </div>
-                        <button type="submit" name="add_to_cart" class="btn btn-primary btn-large btn-block">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
                     </form>
                 <?php endif; ?>
                 
                 <div class="product-description">
-                    <h3>About this product</h3>
-                    <p><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
+                    <h3 style="color: var(--text-main); margin-bottom: 1.5rem; font-size: 1.25rem;">The Experience</h3>
+                    <p style="color: var(--text-muted); line-height: 1.8; font-size: 1.05rem;">
+                        <?php echo nl2br(htmlspecialchars($product['description'])); ?>
+                    </p>
                 </div>
             </div>
         </div>
         
-        <div class="reviews-section animate-fade-in-up">
-            <div class="section-header">
-                <h2>Customer Feedback</h2>
-                <span class="reviews-total"><?php echo $total_reviews; ?> Verified Reviews</span>
+        <div class="reviews-section animate-fade-in" style="margin-top: 8rem;">
+            <div style="margin-bottom: 4rem; text-align: center;">
+                <h2 class="text-gold" style="font-size: 2.5rem; margin-bottom: 1rem;">Customer Reviews</h2>
+                <div class="review-summary-large" style="display: flex; justify-content: center; align-items: center; gap: 2rem;">
+                    <div style="font-size: 3.5rem; font-weight: 800; color: var(--text-main);"><?php echo $avg_rating; ?></div>
+                    <div style="text-align: left;">
+                        <div class="review-stars" style="font-size: 1.25rem; color: var(--primary); margin-bottom: 0.25rem;">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <i class="fas fa-star <?php echo $i <= $avg_rating ? 'active' : ''; ?>"></i>
+                            <?php endfor; ?>
+                        </div>
+                        <span style="color: var(--text-muted);"><?php echo $total_reviews; ?> reviews in total</span>
+                    </div>
+                </div>
             </div>
             
             <?php if ($is_verified_buyer): ?>
-                <div class="review-form-box">
-                    <h3>Write a Review</h3>
-                    <form method="POST" action="">
+                <div class="glass-card" style="margin-bottom: 5rem; padding: 4rem;">
+                    <h3 style="margin-bottom: 2rem; text-align: center;">Share Your Experience</h3>
+                    <form method="POST" action="" style="max-width: 600px; margin: 0 auto;">
                         <?php echo csrfInput(); ?>
-                        <div class="form-group">
-                            <label>Rating</label>
-                            <div class="rating-input">
-                                <?php for ($i = 5; $i >= 1; $i--): ?>
-                                    <input type="radio" name="rating" value="<?php echo $i; ?>" id="star<?php echo $i; ?>" required>
-                                    <label for="star<?php echo $i; ?>"><i class="fas fa-star"></i></label>
+                        <div class="form-group" style="text-align: center;">
+                            <label class="form-label" style="display: block; margin-bottom: 1rem;">Your Rating</label>
+                            <div class="rating-input" style="display: flex; gap: 1rem; justify-content: center; font-size: 2rem; color: #555;">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <label style="cursor: pointer;">
+                                        <input type="radio" name="rating" value="<?php echo $i; ?>" style="display: none;" required>
+                                        <i class="fas fa-star" onclick="
+                                            let stars = this.parentElement.parentElement.querySelectorAll('i');
+                                            stars.forEach((s, idx) => s.style.color = idx < <?php echo $i; ?> ? 'var(--primary)' : '#555');
+                                        "></i>
+                                    </label>
                                 <?php endfor; ?>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="comment">Your Comment</label>
-                            <textarea name="comment" id="comment" rows="4" placeholder="Share your experience with this instrument..." required></textarea>
+                        <div class="form-group" style="margin-top: 2.5rem;">
+                            <label class="form-label" for="comment">Your Review</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="4" placeholder="How's your new instrument sounding?" required></textarea>
                         </div>
-                        <button type="submit" name="submit_review" class="btn btn-primary">Submit Review</button>
+                        <div style="text-align: center; margin-top: 2.5rem;">
+                            <button type="submit" name="submit_review" class="btn btn-primary btn-lg">Post My Review</button>
+                        </div>
                     </form>
-                </div>
-            <?php elseif (isLoggedIn()): ?>
-                <div class="info-alert">
-                    <i class="fas fa-info-circle"></i> Only customers who have purchased this product can leave a review.
-                </div>
-            <?php else: ?>
-                <div class="info-alert">
-                    <i class="fas fa-user-lock"></i> Please <a href="login.php">login</a> to see if you can review this product.
                 </div>
             <?php endif; ?>
 
-            <div class="reviews-list">
+            <div class="reviews-list" style="max-width: 900px; margin: 0 auto;">
                 <?php if ($reviews && $reviews->num_rows > 0): ?>
                     <?php while ($review = $reviews->fetch_assoc()): ?>
-                        <div class="review-card">
+                        <div class="review-card animate-fade-in">
                             <div class="review-header">
                                 <div class="reviewer-info">
                                     <div class="avatar"><?php echo strtoupper(substr($review['full_name'], 0, 1)); ?></div>
                                     <div>
-                                        <strong><?php echo htmlspecialchars($review['full_name']); ?></strong>
-                                        <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Purchase</span>
+                                        <div style="color: var(--text-main); font-weight: 700;"><?php echo htmlspecialchars($review['full_name']); ?></div>
+                                        <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</span>
                                     </div>
                                 </div>
-                                <div class="review-meta">
-                                    <div class="review-stars">
+                                <div style="text-align: right;">
+                                    <div class="review-stars" style="color: var(--primary); margin-bottom: 0.5rem;">
                                         <?php for ($i = 1; $i <= 5; $i++): ?>
                                             <i class="fas fa-star <?php echo $i <= $review['rating'] ? 'active' : ''; ?>"></i>
                                         <?php endfor; ?>
                                     </div>
-                                    <span class="review-date"><?php echo date('M d, Y', strtotime($review['review_date'])); ?></span>
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;"><?php echo date('M d, Y', strtotime($review['review_date'])); ?></span>
                                 </div>
                             </div>
                             <div class="review-body">
-                                <p><?php echo nl2br(htmlspecialchars($review['comment'])); ?></p>
+                                <p style="color: var(--text-muted); line-height: 1.7;"><?php echo nl2br(htmlspecialchars($review['comment'])); ?></p>
                             </div>
                         </div>
                     <?php endwhile; ?>
                 <?php else: ?>
-                    <div class="no-reviews">
-                        <i class="far fa-comments"></i>
-                        <p>No reviews yet. Be the first to share your thoughts!</p>
+                    <div class="glass-card text-center" style="padding: 5rem 3rem;">
+                        <i class="far fa-comments" style="font-size: 4rem; color: rgba(255,255,255,0.05); margin-bottom: 2rem; display: block;"></i>
+                        <h3 style="color: var(--text-main); margin-bottom: 1rem;">No Reviews Yet</h3>
+                        <p style="color: var(--text-muted);">Be the first to share your experience with this instrument.</p>
                     </div>
                 <?php endif; ?>
             </div>

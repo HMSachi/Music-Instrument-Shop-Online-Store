@@ -34,46 +34,55 @@ include 'includes/header.php';
 ?>
 
 <section class="success-section">
-    <div class="container mini-container">
-        <div class="success-card glass-card animate-fade-in-up" style="padding: 5rem 3rem; text-align: center;">
-            <div class="success-icon" style="font-size: 5rem; color: var(--success); margin-bottom: 2.5rem; animation: float 3s ease-in-out infinite;">
-                <i class="fas fa-check-circle"></i>
+    <div class="container" style="max-width: 800px;">
+        <div class="glass-card animate-fade-in" style="padding: 6rem 3rem;">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
             </div>
             
-            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">Order Confirmed!</h1>
-            <p class="order-number" style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 2.5rem;">Order Reference: #<?php echo $order_id; ?></p>
-            <p style="font-size: 1.1rem; color: var(--text-light); max-width: 600px; margin: 0 auto 3rem;">Thank you for choosing Melody Masters. Your new instrument is being prepared for fulfillment and will be on its way to you shortly.</p>
+            <h1 class="text-gold" style="font-size: 3rem; margin-bottom: 1rem;">Order Confirmed!</h1>
+            <div class="order-ref">Reference: #<?php echo $order_id; ?></div>
             
-            <div class="summary-box glass-card" style="max-width: 600px; margin: 0 auto 4rem; padding: 3rem; text-align: left;">
-                <h3 style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">Order Checklist</h3>
-                <div class="summary-list">
+            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 4rem;">
+                Thank you for choosing Melody Masters. Your new instrument is being prepared for fulfillment and will be on its way to you shortly.
+            </p>
+            
+            <div class="glass-card" style="text-align: left; background: rgba(255,255,255,0.02); padding: 3rem; margin-bottom: 4rem;">
+                <h3 style="margin-bottom: 2rem; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Order Summary</h3>
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                     <?php 
-                    $has_digital = false;
-                    $items->data_seek(0); // Reset result pointer
+                    $items->data_seek(0);
                     while($item = $items->fetch_assoc()): 
                     ?>
-                        <div class="summary-item" style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: var(--text);">
-                            <strong><?php echo htmlspecialchars($item['product_name']); ?> x <?php echo $item['quantity']; ?></strong>
-                            <span><?php echo formatPrice($item['price'] * $item['quantity']); ?></span>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--text-main); font-weight: 500;"><?php echo htmlspecialchars($item['product_name']); ?></span>
+                                <span style="color: var(--text-muted); font-size: 0.9rem; margin-left: 0.5rem;">x<?php echo $item['quantity']; ?></span>
+                            </div>
+                            <span style="color: var(--text-main);"><?php echo formatPrice($item['price'] * $item['quantity']); ?></span>
                         </div>
                     <?php endwhile; ?>
                 </div>
                 
-                <div class="summary-totals" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--bg-main);">
-                    <div class="total-row" style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: var(--text-light);">
-                        <span>Standard Shipping:</span>
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: var(--text-muted);">
+                        <span>Shipping</span>
                         <span><?php echo formatPrice($order['shipping_cost']); ?></span>
                     </div>
-                    <div class="total-row grand-total" style="display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 800; color: var(--heading);">
-                        <span>Total Paid:</span>
-                        <span><?php echo formatPrice($order['total_amount']); ?></span>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 700;">
+                        <span style="color: var(--text-main);">Total Paid</span>
+                        <span class="text-gold"><?php echo formatPrice($order['total_amount']); ?></span>
                     </div>
                 </div>
             </div>
             
-            <div class="success-actions" style="display: flex; gap: 1.5rem; justify-content: center;">
-                <a href="shop.php" class="btn btn-primary btn-large">Continue Exploring</a>
-                <a href="customer/dashboard.php" class="btn btn-outline btn-large">Track My Order</a>
+            <div style="display: flex; gap: 1.5rem; justify-content: center;">
+                <a href="shop.php" class="btn btn-secondary">
+                    <i class="fas fa-store"></i> Continue Shopping
+                </a>
+                <a href="customer/dashboard.php" class="btn btn-primary">
+                    <i class="fas fa-box"></i> View Dashboard
+                </a>
             </div>
         </div>
     </div>
