@@ -126,7 +126,7 @@ include 'includes/header.php';
                                 <tbody>
                                     <?php foreach ($cart_items as $item): ?>
                                         <tr>
-                                            <td>
+                                            <td data-label="Instrument">
                                                 <div class="cart-product-cell" style="display: flex; align-items: center; gap: 1.5rem;">
                                                     <div style="width: 80px; height: 80px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color); background: #000;">
                                                         <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($item['image'] ? ltrim($item['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
@@ -141,7 +141,7 @@ include 'includes/header.php';
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td data-label="Volume">
                                                 <div class="qty-control">
                                                     <button type="button" onclick="this.nextElementSibling.stepDown(); this.form.update_cart.click();"><i class="fas fa-minus"></i></button>
                                                     <input type="number" name="quantity[<?php echo $item['product_id']; ?>]" 
@@ -150,8 +150,8 @@ include 'includes/header.php';
                                                     <button type="button" onclick="this.previousElementSibling.stepUp(); this.form.update_cart.click();"><i class="fas fa-plus"></i></button>
                                                 </div>
                                             </td>
-                                            <td style="font-weight: 700; color: var(--text-main); font-size: 1.1rem;"><?php echo formatPrice($item['line_total']); ?></td>
-                                            <td>
+                                            <td data-label="Total" style="font-weight: 700; color: var(--text-main); font-size: 1.1rem;"><?php echo formatPrice($item['line_total']); ?></td>
+                                            <td data-label="Action">
                                                 <button type="submit" name="remove_item" value="1" 
                                                         onclick="this.form.product_id.value='<?php echo $item['product_id']; ?>'"
                                                         class="btn btn-logout btn-sm" style="padding: 0.5rem; width: 40px; height: 40px;" title="Remove Item">

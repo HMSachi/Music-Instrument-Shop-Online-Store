@@ -163,7 +163,7 @@ include 'includes/header.php';
                 </div>
                 
                 <?php if ($product['stock'] > 0): ?>
-                    <form method="POST" action="" class="glass-card" style="padding: 2.5rem; margin-bottom: 3rem; background: rgba(255,255,255,0.02);">
+                    <form method="POST" action="" class="glass-card" style="padding: 2.5rem; margin-bottom: 3rem;">
                         <?php echo csrfInput(); ?>
                         <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                         

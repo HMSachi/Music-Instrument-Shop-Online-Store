@@ -47,7 +47,7 @@ include 'includes/header.php';
                 Thank you for choosing Melody Masters. Your new instrument is being prepared for fulfillment and will be on its way to you shortly.
             </p>
             
-            <div class="glass-card" style="text-align: left; background: rgba(255,255,255,0.02); padding: 3rem; margin-bottom: 4rem;">
+            <div class="glass-card" style="text-align: left; padding: 3rem; margin-bottom: 4rem;">
                 <h3 style="margin-bottom: 2rem; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Order Summary</h3>
                 <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                     <?php 

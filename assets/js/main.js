@@ -111,30 +111,70 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Mobile menu toggle
+    // Mobile menu toggle logic
     const menuToggle = document.querySelector('.menu-toggle');
     const mainNav = document.querySelector('.main-nav');
 
-    if (menuToggle && mainNav) {
-        menuToggle.addEventListener('click', function () {
-            this.classList.toggle('active');
-            mainNav.classList.toggle('active');
+    // Create backdrop overlay if it doesn't exist
+    let menuBackdrop = document.querySelector('.menu-backdrop');
+    if (!menuBackdrop) {
+        menuBackdrop = document.createElement('div');
+        menuBackdrop.className = 'menu-backdrop';
+        document.body.appendChild(menuBackdrop);
+    }
 
-            // Toggle icon
-            const icon = this.querySelector('i');
-            if (this.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+    function toggleMenu(show) {
+        if (!mainNav || !menuToggle) return;
+
+        const isActive = show !== undefined ? show : !mainNav.classList.contains('active');
+        const icon = menuToggle.querySelector('i');
+
+        if (isActive) {
+            menuToggle.classList.add('active');
+            mainNav.classList.add('active');
+            menuBackdrop.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (icon) {
+                icon.setAttribute('class', 'fas fa-times');
             }
+        } else {
+            menuToggle.classList.remove('active');
+            mainNav.classList.remove('active');
+            menuBackdrop.classList.remove('active');
+            document.body.style.overflow = '';
+            if (icon) {
+                icon.setAttribute('class', 'fas fa-bars');
+            }
+        }
+    }
+
+    if (menuToggle && mainNav) {
+        const newToggle = menuToggle.cloneNode(true);
+        menuToggle.parentNode.replaceChild(newToggle, menuToggle);
+
+        newToggle.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
+        };
+
+        const menuToggleRef = newToggle;
+
+        document.onclick = (e) => {
+            if (mainNav.classList.contains('active') && !mainNav.contains(e.target) && !menuToggleRef.contains(e.target)) {
+                toggleMenu(false);
+            }
+        };
+
+        menuBackdrop.onclick = () => toggleMenu(false);
+
+        mainNav.querySelectorAll('a').forEach(link => {
+            link.onclick = () => toggleMenu(false);
         });
     }
 
     // Price formatting
     const priceElements = document.querySelectorAll('.price, .product-price');
-
     priceElements.forEach(element => {
         const text = element.textContent;
         if (!text.includes('£') && !isNaN(parseFloat(text))) {
@@ -144,10 +184,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Search functionality enhancement
     const searchForms = document.querySelectorAll('.search-form');
-
     searchForms.forEach(form => {
         const input = form.querySelector('input[type="text"]');
-
         if (input) {
             input.addEventListener('input', function () {
                 if (this.value.length > 0) {
@@ -160,7 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Add loading state to forms on submit
-    forms.forEach(form => {
+    const allForms = document.querySelectorAll('form');
+    allForms.forEach(form => {
         form.addEventListener('submit', function (e) {
             const button = this.querySelector('button[type="submit"]');
 
@@ -188,11 +227,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
     // Hero Slider Logic
     const slides = document.querySelectorAll('.hero-slide');
     if (slides.length > 0) {
         let currentSlide = 0;
-        const slideInterval = setInterval(() => {
+        setInterval(() => {
             slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
