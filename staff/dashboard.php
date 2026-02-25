@@ -31,63 +31,75 @@ $page_title = 'Staff Dashboard - Melody Masters';
 include '../includes/header.php';
 ?>
 
-<section class="dashboard-section">
+<section class="admin-section">
     <div class="container">
-        <h1><i class="fas fa-layer-group"></i> Staff Operations</h1>
+        <div style="margin-bottom: 4rem;">
+            <h1 class="text-gold">Staff Operations Center</h1>
+            <p style="color: var(--text-muted);">Monitor logistics and maintain the instrument inventory.</p>
+        </div>
         
-        <div class="dashboard-grid">
+        <div class="admin-layout animate-fade-in">
             <!-- Sidebar -->
-            <aside class="dashboard-sidebar">
-                <div class="user-profile animate-fade-in-up">
-                    <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;">
-                        <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
+            <aside class="admin-sidebar">
+                <div class="glass-card card-shimmer" style="padding: 2.5rem; position: sticky; top: 100px;">
+                    <div style="text-align: center; margin-bottom: 3rem;">
+                        <div style="width: 80px; height: 80px; background: var(--gold-gradient); color: var(--bg-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 1.5rem; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);">
+                            <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
+                        </div>
+                        <h4 style="color: var(--text-main); margin: 0; font-size: 1.1rem;"><?php echo htmlspecialchars($user['full_name']); ?></h4>
+                        <span class="badge badge-info" style="margin-top: 0.5rem;"><?php echo ucfirst($user['role']); ?> Operations</span>
                     </div>
-                    <h3><?php echo htmlspecialchars($user['full_name']); ?></h3>
-                    <span class="badge badge-info" style="position: static; display: inline-block; margin-top: 0.5rem;"><?php echo ucfirst($user['role']); ?></span>
+                    
+                    <nav class="dashboard-nav">
+                        <a href="?tab=orders" class="<?php echo $tab === 'orders' ? 'active' : ''; ?>">
+                            <i class="fas fa-shipping-fast"></i> Order Fulfillment
+                        </a>
+                        <a href="?tab=inventory" class="<?php echo $tab === 'inventory' ? 'active' : ''; ?>">
+                            <i class="fas fa-boxes"></i> Inventory Control
+                        </a>
+                        <a href="<?php echo SITE_URL; ?>/index.php" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                            <i class="fas fa-external-link-alt"></i> Storefront
+                        </a>
+                        <a href="<?php echo SITE_URL; ?>/logout.php" style="color: var(--error);">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </a>
+                    </nav>
                 </div>
-                
-                <nav class="dashboard-nav">
-                    <a href="?tab=orders" class="<?php echo $tab === 'orders' ? 'active' : ''; ?>">
-                        <i class="fas fa-shopping-cart"></i> Order Fulfillment
-                    </a>
-                    <a href="?tab=inventory" class="<?php echo $tab === 'inventory' ? 'active' : ''; ?>">
-                        <i class="fas fa-boxes"></i> Inventory Control
-                    </a>
-                    <a href="<?php echo SITE_URL; ?>/index.php"><i class="fas fa-home"></i> Back to Site</a>
-                    <a href="<?php echo SITE_URL; ?>/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </nav>
             </aside>
             
             <!-- Content -->
-            <div class="dashboard-content">
+            <div class="admin-content">
                 <?php if ($tab === 'orders'): ?>
-                    <div class="content-section">
-                        <h2><i class="fas fa-shipping-fast"></i> Order Management</h2>
+                    <div class="admin-section-box card-shimmer">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                            <h2 style="margin: 0;">Order Manifest</h2>
+                        </div>
+                        
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Order</th>
-                                        <th>Customer</th>
-                                        <th>Status</th>
-                                        <th>Tracking #</th>
+                                        <th>Ref ID</th>
+                                        <th>Acquirer</th>
+                                        <th>Logistics Status</th>
+                                        <th>Tracking Reference</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php while ($order = $orders->fetch_assoc()): ?>
                                         <tr>
-                                            <td>#<?php echo $order['order_id']; ?></td>
+                                            <td style="color: var(--primary); font-family: monospace; font-weight: 700;">#<?php echo $order['order_id']; ?></td>
                                             <td>
-                                                <strong><?php echo htmlspecialchars($order['full_name']); ?></strong><br>
-                                                <small style="color: var(--text-light);"><?php echo date('M d, Y', strtotime($order['order_date'])); ?></small>
+                                                <div style="color: var(--text-main); font-weight: 600;"><?php echo htmlspecialchars($order['full_name']); ?></div>
+                                                <div style="font-size: 0.8rem; color: var(--text-muted);"><?php echo date('M d, Y', strtotime($order['order_date'])); ?></div>
                                             </td>
                                             <form action="process_actions.php" method="POST">
                                                 <?php echo csrfInput(); ?>
                                                 <input type="hidden" name="action" value="update_order">
                                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                                                 <td>
-                                                    <select name="status" class="form-control-sm">
+                                                    <select name="status" class="form-control-sm" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
                                                         <option value="Pending" <?php echo $order['order_status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
                                                         <option value="Processing" <?php echo $order['order_status'] === 'Processing' ? 'selected' : ''; ?>>Processing</option>
                                                         <option value="Shipped" <?php echo $order['order_status'] === 'Shipped' ? 'selected' : ''; ?>>Shipped</option>
@@ -98,10 +110,11 @@ include '../includes/header.php';
                                                 <td>
                                                     <input type="text" name="tracking_number" 
                                                            value="<?php echo htmlspecialchars($order['tracking_number'] ?? ''); ?>" 
-                                                           placeholder="Unassigned" class="form-control-sm" style="width: 120px;">
+                                                           placeholder="Assign Track ID" class="form-control-sm" 
+                                                           style="width: 140px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
                                                 </td>
                                                 <td>
-                                                    <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                                                    <button type="submit" class="btn btn-sm btn-primary">Sync</button>
                                                 </td>
                                             </form>
                                         </tr>
@@ -112,36 +125,41 @@ include '../includes/header.php';
                     </div>
 
                 <?php elseif ($tab === 'inventory'): ?>
-                    <div class="content-section">
-                        <h2><i class="fas fa-warehouse"></i> Stock Management</h2>
+                    <div class="admin-section-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                            <h2 style="margin: 0;">Stock Procurement</h2>
+                        </div>
+
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th>Current Stock</th>
-                                        <th>New Stock</th>
+                                        <th>Instrument</th>
+                                        <th>Current Level</th>
+                                        <th>Adjust Stock</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php while ($product = $products->fetch_assoc()): ?>
-                                        <tr class="<?php echo $product['stock'] <= 5 ? 'row-warning' : ''; ?>">
+                                        <tr>
                                             <td>
-                                                <div class="product-cell" style="display: flex; align-items: center; gap: 1rem;">
-                                                    <div class="admin-product-thumb" style="width: 40px; height: 40px;">
-                                                        <img src="<?php echo SITE_URL; ?>/<?php echo $product['image']; ?>" alt="">
-                                                    </div>
+                                                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                                                    <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
+                                                         style="width: 45px; height: 45px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                                                     <div>
-                                                        <strong><?php echo htmlspecialchars($product['product_name']); ?></strong><br>
-                                                        <small style="color: var(--text-light);"><?php echo htmlspecialchars($product['brand']); ?></small>
+                                                        <div style="color: var(--text-main); font-weight: 600;"><?php echo htmlspecialchars($product['product_name']); ?></div>
+                                                        <div style="font-size: 0.8rem; color: var(--text-muted);"><?php echo htmlspecialchars($product['brand']); ?></div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge <?php echo $product['stock'] <= 5 ? 'badge-danger' : 'badge-success'; ?>" style="position: static;">
-                                                    <?php echo $product['stock']; ?>
+                                                <span class="badge <?php echo $product['stock'] <= 5 ? 'badge-cancelled' : 'badge-success'; ?>" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                                                    <?php echo $product['stock']; ?> Units
                                                 </span>
+                                                <?php if ($product['stock'] <= 5): ?>
+                                                    <div style="color: var(--error); font-size: 0.7rem; font-weight: 700; margin-top: 0.25rem; text-transform: uppercase;">Low Stock Alert</div>
+                                                <?php endif; ?>
                                             </td>
                                             <form action="process_actions.php" method="POST">
                                                 <?php echo csrfInput(); ?>
@@ -149,7 +167,8 @@ include '../includes/header.php';
                                                 <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                                                 <td>
                                                     <input type="number" name="stock" value="<?php echo $product['stock']; ?>" 
-                                                           min="0" class="form-control-sm" style="width: 80px;">
+                                                           min="0" class="form-control-sm" 
+                                                           style="width: 90px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); color: var(--text-main); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
                                                 </td>
                                                 <td>
                                                     <button type="submit" class="btn btn-sm btn-secondary">Update</button>

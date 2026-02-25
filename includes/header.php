@@ -10,8 +10,12 @@ if (!isset($page_title)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $page_title; ?></title>
     <meta name="csrf-token" content="<?php echo generateCsrfToken(); ?>">
+    
+    <!-- Modern Styles -->
     <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/modern-theme.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <script>
         const SITE_URL = '<?php echo SITE_URL; ?>';
     </script>
@@ -26,6 +30,10 @@ if (!isset($page_title)) {
                         <span>Melody Masters</span>
                     </a>
                 </div>
+                
+                <button class="menu-toggle" aria-label="Toggle Navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
                 
                 <nav class="main-nav">
                     <ul>

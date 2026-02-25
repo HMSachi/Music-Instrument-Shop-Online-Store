@@ -88,202 +88,209 @@ $page_title = 'My Dashboard - Melody Masters';
 include '../includes/header.php';
 ?>
 
-<section class="dashboard-section">
+<section class="dashboard-section" style="padding: 6rem 0;">
     <div class="container">
-        <h1><i class="fas fa-tachometer-alt"></i> My Dashboard</h1>
+        <div style="margin-bottom: 3rem;">
+            <h1 class="text-gold">My Dashboard</h1>
+            <p style="color: var(--text-muted);">Manage your orders and account details.</p>
+        </div>
         
         <?php if ($order_placed): ?>
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> Your order has been placed successfully!
+            <div class="alert alert-success animate-fade-in" style="margin-bottom: 2rem;">
+                <i class="fas fa-check-circle"></i> Your order has been placed successfully! Welcome to the Melody Masters family.
             </div>
         <?php endif; ?>
 
         <?php if (isset($success_msg)): ?>
-            <div class="alert alert-success">
+            <div class="alert alert-success animate-fade-in" style="margin-bottom: 2rem;">
                 <i class="fas fa-check-circle"></i> <?php echo $success_msg; ?>
             </div>
         <?php endif; ?>
 
         <?php if (isset($error_msg)): ?>
-            <div class="alert alert-error">
+            <div class="alert alert-error animate-fade-in" style="margin-bottom: 2rem;">
                 <i class="fas fa-exclamation-circle"></i> <?php echo $error_msg; ?>
             </div>
         <?php endif; ?>
         
-        <div class="dashboard-grid">
+        <div class="dashboard-grid animate-fade-in">
             <!-- Sidebar -->
             <aside class="dashboard-sidebar">
-                <div class="user-profile animate-fade-in-up">
-                    <div class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1.5rem;">
+                <div class="glass-card card-shimmer text-center">
+                    <div style="width: 100px; height: 100px; background: var(--gold-gradient); color: var(--bg-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; margin: 0 auto 2rem; box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);">
                         <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
                     </div>
-                    <h3><?php echo htmlspecialchars($user['full_name']); ?></h3>
-                    <p style="color: var(--text-light);"><?php echo htmlspecialchars($user['email']); ?></p>
+                    <h3 style="color: var(--text-main); margin-bottom: 0.5rem;"><?php echo htmlspecialchars($user['full_name']); ?></h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2.5rem;"><?php echo htmlspecialchars($user['email']); ?></p>
+                    
+                    <nav class="dashboard-nav">
+                        <a href="dashboard.php" class="<?php echo !isset($_GET['tab']) || $_GET['tab'] == 'orders' ? 'active' : ''; ?>">
+                            <i class="fas fa-shopping-bag"></i> My Orders
+                        </a>
+                        <a href="?tab=profile" class="<?php echo isset($_GET['tab']) && $_GET['tab'] == 'profile' ? 'active' : ''; ?>">
+                            <i class="fas fa-user-circle"></i> Account Profile
+                        </a>
+                        <a href="<?php echo SITE_URL; ?>/logout.php" style="margin-top: 1rem; color: var(--error);">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </a>
+                    </nav>
                 </div>
-                
-                <nav class="dashboard-nav">
-                    <a href="<?php echo SITE_URL; ?>/customer/dashboard.php" class="<?php echo !isset($_GET['tab']) || $_GET['tab'] == 'orders' ? 'active' : ''; ?>"><i class="fas fa-box"></i> My Orders</a>
-                    <a href="?tab=profile" class="<?php echo isset($_GET['tab']) && $_GET['tab'] == 'profile' ? 'active' : ''; ?>"><i class="fas fa-user"></i> Profile</a>
-                    <a href="<?php echo SITE_URL; ?>/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                </nav>
             </aside>
             
             <!-- Content -->
             <div class="dashboard-content">
                 <?php if (!isset($_GET['tab']) || $_GET['tab'] == 'orders'): ?>
-                <div class="content-section">
-                    <h2>My Orders</h2>
+                    <h2 style="margin-bottom: 2rem; color: var(--text-main);">Order History</h2>
                     
                     <?php if ($orders && $orders->num_rows > 0): ?>
                         <div class="orders-list">
                             <?php while ($order = $orders->fetch_assoc()): ?>
-                                <div class="glass-card animate-fade-in-up" style="margin-bottom: 2rem; padding: 2.5rem; overflow: hidden;">
-                                    <div class="order-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+                                <div class="glass-card order-card card-shimmer" style="padding: 0; overflow: hidden;">
+                                    <div class="order-card-header">
                                         <div>
-                                            <h4 style="font-size: 1.1rem; color: var(--heading);">Order #<?php echo $order['order_id']; ?></h4>
-                                            <p class="order-date" style="margin-top: 0.5rem; color: var(--text-light);">
-                                                <i class="fas fa-calendar" style="margin-right: 0.5rem;"></i>
-                                                <?php echo date('F d, Y', strtotime($order['order_date'])); ?>
-                                            </p>
+                                            <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Order</span>
+                                            <h4 style="margin: 0; color: var(--primary);">#<?php echo $order['order_id']; ?></h4>
                                         </div>
-                                        <span class="badge badge-<?php echo strtolower($order['order_status']); ?>" style="position: static;">
-                                            <?php echo $order['order_status']; ?>
-                                        </span>
+                                        <div style="text-align: right;">
+                                            <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">
+                                                <?php echo date('M d, Y', strtotime($order['order_date'])); ?>
+                                            </span>
+                                            <span class="badge badge-<?php echo strtolower($order['order_status']); ?>">
+                                                <?php echo $order['order_status']; ?>
+                                            </span>
+                                        </div>
                                     </div>
                                     
-                                    <?php
-                                    // Get order items with digital info and counts
-                                    $items_sql = "SELECT oi.*, p.product_name, p.product_type, p.image, 
-                                                         dp.download_limit, od.download_count 
-                                                   FROM order_items oi 
-                                                   JOIN products p ON oi.product_id = p.product_id 
-                                                   LEFT JOIN digital_products dp ON p.product_id = dp.product_id
-                                                   LEFT JOIN order_downloads od ON oi.order_item_id = od.order_item_id
-                                                   WHERE oi.order_id = ?";
-                                    $items = preparedQuery($conn, $items_sql, [$order['order_id']], "i");
-                                    ?>
-                                    
-                                    <div class="order-items-grid" style="display: grid; gap: 1.5rem;">
-                                        <?php while ($item = $items->fetch_assoc()): ?>
-                                            <div class="order-item-row" style="display: flex; gap: 1.5rem; align-items: center; padding: 1rem; background: var(--bg-main); border-radius: var(--radius);">
-                                                <div class="admin-product-thumb" style="width: 60px; height: 60px; flex-shrink: 0;">
+                                    <div class="order-card-body">
+                                        <?php
+                                        $items_sql = "SELECT oi.*, p.product_name, p.product_type, p.image 
+                                                       FROM order_items oi 
+                                                       JOIN products p ON oi.product_id = p.product_id 
+                                                       WHERE oi.order_id = ?";
+                                        $items = preparedQuery($conn, $items_sql, [$order['order_id']], "i");
+                                        ?>
+                                        
+                                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                            <?php while ($item = $items->fetch_assoc()): ?>
+                                                <div style="display: flex; align-items: center; gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                                                     <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($item['image'] ? ltrim($item['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
-                                                         alt="<?php echo htmlspecialchars($item['product_name']); ?>"
-                                                         onerror="this.src='<?php echo SITE_URL; ?>/assets/images/placeholder.jpg';">
-                                                </div>
-                                                <div class="item-info" style="flex-grow: 1;">
-                                                    <h5 style="margin-bottom: 0.25rem; font-weight: 700;"><?php echo htmlspecialchars($item['product_name']); ?></h5>
-                                                    <p style="font-size: 0.85rem; color: var(--text-light);">Qty: <?php echo $item['quantity']; ?> × <?php echo formatPrice($item['price']); ?></p>
-                                                </div>
-                                                
-                                                <div class="item-actions" style="display: flex; gap: 1rem;">
-                                                    <?php if ($item['product_type'] === 'digital'): 
-                                                        $limit = $item['download_limit'] ?? 3;
-                                                        $count = $item['download_count'] ?? 0;
-                                                        $remaining = max(0, $limit - $count);
-                                                        $is_disabled = ($remaining <= 0);
-                                                    ?>
-                                                        <a href="<?php echo SITE_URL; ?>/download.php?id=<?php echo $item['product_id']; ?>" 
-                                                            class="btn btn-sm <?php echo $is_disabled ? 'btn-disabled' : 'btn-secondary'; ?>">
-                                                            <i class="fas fa-download"></i> <?php echo $is_disabled ? 'Limit Reached' : 'Download'; ?>
-                                                        </a>
-                                                    <?php endif; ?>
+                                                         style="width: 70px; height: 70px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                                    <div style="flex: 1;">
+                                                        <h5 style="margin: 0; color: var(--text-main); font-size: 1.1rem;"><?php echo htmlspecialchars($item['product_name']); ?></h5>
+                                                        <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">
+                                                            <?php echo $item['quantity']; ?> × <?php echo formatPrice($item['price']); ?>
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div style="display: flex; gap: 0.75rem;">
+                                                        <?php if ($item['product_type'] === 'digital'): ?>
+                                                            <a href="<?php echo SITE_URL; ?>/download.php?id=<?php echo $item['product_id']; ?>" 
+                                                               class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-download"></i>
+                                                            </a>
+                                                        <?php endif; ?>
 
-                                                    <?php if ($order['order_status'] === 'Delivered'): ?>
-                                                        <button class="btn btn-sm btn-outline" onclick="toggleReview(<?php echo $item['product_id']; ?>)">
-                                                            <i class="fas fa-star"></i> Review
-                                                        </button>
-                                                    <?php endif; ?>
+                                                        <?php if ($order['order_status'] === 'Delivered'): ?>
+                                                            <button class="btn btn-sm btn-secondary" onclick="toggleReview(<?php echo $item['product_id']; ?>)">
+                                                                <i class="fas fa-star"></i>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <?php if ($order['order_status'] === 'Delivered'): ?>
-                                                <!-- Review Form (Hidden) -->
-                                                <div id="review-form-<?php echo $item['product_id']; ?>" class="review-form-inline glass-card" style="display: none; padding: 2rem; margin-top: 1rem;">
-                                                    <h4 style="margin-bottom: 1.5rem;">Share Your Experience</h4>
-                                                    <form method="POST" action="">
-                                                        <?php echo csrfInput(); ?>
-                                                        <input type="hidden" name="product_id" value="<?php echo $item['product_id']; ?>">
-                                                        <div class="form-group">
-                                                            <label>Rating</label>
-                                                            <div class="rating-input" style="display: flex; gap: 0.5rem; flex-direction: row-reverse; justify-content: flex-end;">
-                                                                <?php for ($i = 5; $i >= 1; $i--): ?>
-                                                                    <input type="radio" name="rating" value="<?php echo $i; ?>" id="star-<?php echo $item['product_id']; ?>-<?php echo $i; ?>" required style="display: none;">
-                                                                    <label for="star-<?php echo $item['product_id']; ?>-<?php echo $i; ?>" style="cursor: pointer; font-size: 1.5rem; color: #ddd;"><i class="fas fa-star"></i></label>
-                                                                <?php endfor; ?>
+                                                <?php if ($order['order_status'] === 'Delivered'): ?>
+                                                    <div id="review-form-<?php echo $item['product_id']; ?>" style="display: none; padding: 2.5rem; background: rgba(255,255,255,0.02); border-radius: var(--radius-md); margin-top: 1rem;">
+                                                        <h4 style="margin-bottom: 2rem;">Post a Review for <?php echo htmlspecialchars($item['product_name']); ?></h4>
+                                                        <form method="POST" action="">
+                                                            <?php echo csrfInput(); ?>
+                                                            <input type="hidden" name="product_id" value="<?php echo $item['product_id']; ?>">
+                                                            
+                                                            <div class="form-group">
+                                                                <label class="form-label">Rating</label>
+                                                                <div class="rating-input" style="display: flex; gap: 0.75rem; font-size: 1.5rem; color: #555;">
+                                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                                        <label style="cursor: pointer; transition: var(--transition);">
+                                                                            <input type="radio" name="rating" value="<?php echo $i; ?>" required style="display: none;">
+                                                                            <i class="fas fa-star" onclick="this.parentElement.parentElement.querySelectorAll('i').forEach((s, idx) => s.style.color = idx < <?php echo $i; ?> ? 'var(--primary)' : '#555')"></i>
+                                                                        </label>
+                                                                    <?php endfor; ?>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label>Your Review</label>
-                                                            <textarea name="comment" rows="3" placeholder="How's your new instrument sounding?" style="width: 100%;"></textarea>
-                                                        </div>
-                                                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                                                            <button type="submit" name="submit_review" class="btn btn-sm btn-primary">Post Review</button>
-                                                            <button type="button" class="btn btn-sm btn-outline" onclick="toggleReview(<?php echo $item['product_id']; ?>)">Cancel</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            <?php endif; ?>
-                                        <?php endwhile; ?>
-                                    </div>
-                                    
-                                    <div class="order-footer" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
-                                        <div class="order-total" style="font-size: 1.25rem; font-weight: 800; color: var(--heading);">
-                                            Total: <?php echo formatPrice($order['total_amount']); ?>
+                                                            
+                                                            <div class="form-group" style="margin-top: 1.5rem;">
+                                                                <label class="form-label">Your Experience</label>
+                                                                <textarea name="comment" class="form-control" rows="3" placeholder="How's your new instrument?"></textarea>
+                                                            </div>
+                                                            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                                                                <button type="submit" name="submit_review" class="btn btn-primary">Submit Review</button>
+                                                                <button type="button" class="btn btn-secondary" onclick="toggleReview(<?php echo $item['product_id']; ?>)">Cancel</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                <?php endif; ?>
+                                            <?php endwhile; ?>
+                                        </div>
+                                        
+                                        <div style="margin-top: 2.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;">
+                                            <span style="color: var(--text-muted);">Total Amount:</span>
+                                            <span class="text-gold" style="font-size: 1.5rem; font-weight: 700;"><?php echo formatPrice($order['total_amount']); ?></span>
                                         </div>
                                     </div>
                                 </div>
                             <?php endwhile; ?>
                         </div>
                     <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-box-open"></i>
-                            <p>You haven't placed any orders yet</p>
+                        <div class="glass-card text-center" style="padding: 6rem 3rem;">
+                            <div style="font-size: 4rem; color: rgba(255,255,255,0.05); margin-bottom: 2rem;">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h3 style="color: var(--text-main);">No orders found</h3>
+                            <p style="color: var(--text-muted); margin-bottom: 2.5rem;">You haven't purchased any instruments yet.</p>
                             <a href="<?php echo SITE_URL; ?>/shop.php" class="btn btn-primary">
-                                Start Shopping
+                                Explore Shop
                             </a>
                         </div>
                     <?php endif; ?>
-                </div>
                 
                 <?php elseif (isset($_GET['tab']) && $_GET['tab'] == 'profile'): ?>
-                <div class="content-section animate-fade-in-up" id="profile">
-                    <h2>Profile Information</h2>
+                    <h2 style="margin-bottom: 2rem; color: var(--text-main);">Account Profile</h2>
                     
-                    <form method="POST" action="" class="profile-update-form glass-card" style="padding: 3rem;">
-                        <?php echo csrfInput(); ?>
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                            <div class="form-group">
-                                <label for="full_name">Full Name</label>
-                                <input type="text" id="full_name" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
+                    <div class="glass-card card-shimmer" style="padding: 3.5rem;">
+                        <form method="POST" action="">
+                            <?php echo csrfInput(); ?>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                <div class="form-group">
+                                    <label class="form-label" for="full_name">Full Name</label>
+                                    <input type="text" id="full_name" name="full_name" class="form-control" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="email">Email Address</label>
+                                    <input type="email" id="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" disabled style="opacity: 0.6;">
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="email">Email Address</label>
-                                <input type="email" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" disabled style="background: hsla(var(--p-h), 83%, 53%, 0.05); cursor: not-allowed;">
-                            </div>
-                        </div>
 
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" placeholder="+44 123 456 7890">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                <div class="form-group">
+                                    <label class="form-label" for="phone">Phone Number</label>
+                                    <input type="text" id="phone" name="phone" class="form-control" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" placeholder="+44 123 456 7890">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Member Since</label>
+                                    <input type="text" class="form-control" value="<?php echo date('F d, Y', strtotime($user['created_at'])); ?>" disabled style="opacity: 0.6;">
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="created_at">Member Since</label>
-                                <input type="text" id="created_at" value="<?php echo date('F d, Y', strtotime($user['created_at'])); ?>" disabled style="background: hsla(var(--p-h), 83%, 53%, 0.05); cursor: not-allowed;">
+
+                            <div class="form-group" style="margin-bottom: 3rem;">
+                                <label class="form-label" for="address">Default Shipping Address</label>
+                                <textarea id="address" name="address" class="form-control" rows="4" placeholder="Street, City, Postal Code..."><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
                             </div>
-                        </div>
 
-                        <div class="form-group" style="margin-bottom: 3rem;">
-                            <label for="address">Primary Shipping Address</label>
-                            <textarea id="address" name="address" rows="4" placeholder="Street, City, Postcode, Country"><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
-                        </div>
-
-                        <button type="submit" name="update_profile" class="btn btn-primary btn-large">
-                            <i class="fas fa-save"></i> Update Profile Details
-                        </button>
-                    </form>
-                </div>
+                            <button type="submit" name="update_profile" class="btn btn-primary">
+                                <i class="fas fa-save" style="margin-right: 0.5rem;"></i> Save Changes
+                            </button>
+                        </form>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>

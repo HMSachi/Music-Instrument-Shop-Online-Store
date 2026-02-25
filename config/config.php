@@ -5,7 +5,25 @@
 
 // Site settings
 define('SITE_NAME', 'Melody Masters');
-define('SITE_URL', 'http://localhost/Music-Instrument-Shop-Online-Store');
+
+// Auto-detect SITE_URL for local and hosted environments
+if (!isset($_ENV['SITE_URL'])) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? 0) == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+    $path = str_replace(basename($script_name), '', $script_name);
+    $path = trim($path, '/');
+    $path = $path ? '/' . $path : '';
+    
+    // Fallback for localhost development with subfolders
+    if ($host === 'localhost' && strpos($path, 'Music-Instrument-Shop-Online-Store') === false) {
+        $path = '/Music-Instrument-Shop-Online-Store';
+    }
+    
+    define('SITE_URL', rtrim($protocol . $host . $path, '/'));
+} else {
+    define('SITE_URL', rtrim($_ENV['SITE_URL'], '/'));
+}
 
 // Session settings
 if (session_status() === PHP_SESSION_NONE) {
@@ -27,9 +45,10 @@ if (session_status() === PHP_SESSION_NONE) {
     $_SESSION['last_activity'] = time();
 
     // Session Fingerprinting (Prevent Hijacking)
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'CLI-Agent';
     if (!isset($_SESSION['user_agent'])) {
-        $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-    } elseif ($_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']) {
+        $_SESSION['user_agent'] = $user_agent;
+    } elseif ($_SESSION['user_agent'] !== $user_agent) {
         session_unset();
         session_destroy();
         session_start();

@@ -121,61 +121,66 @@ include 'includes/header.php';
 
 
 <div class="auth-container">
-    <div class="auth-box animate-fade-in-up">
-        <h2>Join Melody Masters</h2>
-        <p style="text-align: center; color: var(--text-light); margin-top: -2rem; margin-bottom: 3rem;">Start your musical journey with us today.</p>
+    <div class="auth-box glass-card animate-fade-in" style="max-width: 650px;">
+        <div style="text-align: center; margin-bottom: 3.5rem;">
+            <h2 class="text-gold">Join Melody Masters</h2>
+            <p style="color: var(--text-muted);">Create your account to start your musical journey.</p>
+        </div>
         
         <?php if ($error): ?>
-            <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i> 
-                <div><?php echo $error; ?></div>
+            <div class="alert alert-error" style="margin-bottom: 2.5rem;">
+                <i class="fas fa-exclamation-triangle" style="margin-right: 0.75rem;"></i> 
+                <div style="font-size: 0.9rem; line-height: 1.6;"><?php echo $error; ?></div>
             </div>
         <?php endif; ?>
         
         <form method="POST" action="" id="registerForm" novalidate>
             <?php echo csrfInput(); ?>
-            <div class="form-group">
-                <label for="full_name">Full Name</label>
-                <input type="text" id="full_name" name="full_name" required placeholder="John Doe"
-                       value="<?php echo isset($_POST['full_name']) ? htmlspecialchars($_POST['full_name']) : ''; ?>">
-            </div>
             
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="john@example.com"
-                       value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
-            </div>
-            
-            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="Min. 6 chars">
+                    <label class="form-label" for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" class="form-control" required placeholder="John Doe"
+                           value="<?php echo isset($_POST['full_name']) ? htmlspecialchars($_POST['full_name']) : ''; ?>">
                 </div>
                 
                 <div class="form-group">
-                    <label for="confirm_password">Confirm</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" required placeholder="john@example.com"
+                           value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
                 </div>
             </div>
             
-            <div class="form-group">
-                <label for="phone">Phone (Optional)</label>
-                <input type="tel" id="phone" name="phone" placeholder="+44 123 456 7890"
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required placeholder="Min. 6 characters">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Repeat password">
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label class="form-label" for="phone">Phone Number (Optional)</label>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="+44 123 456 7890"
                        value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : ''; ?>">
             </div>
             
-            <div class="form-group">
-                <label for="address">Mailing Address</label>
-                <textarea id="address" name="address" rows="3" placeholder="Where should we ship your instruments?"><?php echo isset($_POST['address']) ? htmlspecialchars($_POST['address']) : ''; ?></textarea>
+            <div class="form-group" style="margin-bottom: 2.5rem;">
+                <label class="form-label" for="address">Mailing Address</label>
+                <textarea id="address" name="address" class="form-control" rows="3" placeholder="Where should we ship your gear?"><?php echo isset($_POST['address']) ? htmlspecialchars($_POST['address']) : ''; ?></textarea>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block btn-large">
-                <i class="fas fa-user-plus"></i> Create Account
+            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                Create My Account <i class="fas fa-user-plus" style="margin-left: 0.5rem;"></i>
             </button>
         </form>
         
         <div class="auth-footer">
-            <p>Already a member? <a href="login.php">Sign In</a></p>
+            <p>Already have an account? <a href="login.php">Sign In Here</a></p>
         </div>
     </div>
 </div>
