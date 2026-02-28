@@ -31,44 +31,43 @@ $page_title = 'Staff Dashboard - Melody Masters';
 include '../includes/header.php';
 ?>
 
-<section class="admin-section">
-    <div class="container">
-        <div style="margin-bottom: 4rem;">
-            <h1 class="text-gold">Staff Operations Center</h1>
-            <p style="color: var(--text-muted);">Monitor logistics and maintain the instrument inventory.</p>
+<!-- Admin Redesign Wrapper -->
+<div class="admin-wrapper slide-up-fade">
+    <!-- Floating Glass Sidebar -->
+    <aside class="admin-sidebar-glass">
+        <div class="admin-profile-badge">
+            <div class="admin-avatar">
+                <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
+            </div>
+            <h4><?php echo htmlspecialchars($user['full_name']); ?></h4>
+            <div style="color: var(--admin-primary); font-size: 0.8rem; margin-top: 0.25rem;"><?php echo ucfirst($user['role']); ?> Operations</div>
         </div>
         
-        <div class="admin-layout animate-fade-in">
-            <!-- Sidebar -->
-            <aside class="admin-sidebar">
-                <div class="glass-card card-shimmer" style="padding: 2.5rem; position: sticky; top: 100px;">
-                    <div style="text-align: center; margin-bottom: 3rem;">
-                        <div style="width: 80px; height: 80px; background: var(--gold-gradient); color: var(--bg-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 1.5rem; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);">
-                            <?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>
-                        </div>
-                        <h4 style="color: var(--text-main); margin: 0; font-size: 1.1rem;"><?php echo htmlspecialchars($user['full_name']); ?></h4>
-                        <span class="badge badge-info" style="margin-top: 0.5rem;"><?php echo ucfirst($user['role']); ?> Operations</span>
-                    </div>
-                    
-                    <nav class="dashboard-nav">
-                        <a href="?tab=orders" class="<?php echo $tab === 'orders' ? 'active' : ''; ?>">
-                            <i class="fas fa-shipping-fast"></i> Order Fulfillment
-                        </a>
-                        <a href="?tab=inventory" class="<?php echo $tab === 'inventory' ? 'active' : ''; ?>">
-                            <i class="fas fa-boxes"></i> Inventory Control
-                        </a>
-                        <a href="<?php echo SITE_URL; ?>/index.php" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                            <i class="fas fa-external-link-alt"></i> Storefront
-                        </a>
-                        <a href="<?php echo SITE_URL; ?>/logout.php" style="color: var(--error);">
-                            <i class="fas fa-sign-out-alt"></i> Sign Out
-                        </a>
-                    </nav>
-                </div>
-            </aside>
+        <nav class="admin-nav-menu">
+            <a href="?tab=orders" class="admin-nav-item <?php echo $tab === 'orders' ? 'active' : ''; ?>">
+                <i class="fas fa-shipping-fast"></i> Order Fulfillment
+            </a>
+            <a href="?tab=inventory" class="admin-nav-item <?php echo $tab === 'inventory' ? 'active' : ''; ?>">
+                <i class="fas fa-boxes"></i> Inventory Control
+            </a>
             
-            <!-- Content -->
-            <div class="admin-content">
+            <div class="admin-nav-divider"></div>
+            
+            <a href="<?php echo SITE_URL; ?>/index.php" class="admin-nav-item" style="color: var(--admin-primary);">
+                <i class="fas fa-external-link-alt"></i> Storefront
+            </a>
+            <a href="<?php echo SITE_URL; ?>/logout.php" class="admin-nav-item" style="color: var(--error);">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main-content">
+        <div class="admin-page-header">
+            <h1 class="admin-page-title">Staff Operations Center</h1>
+            <p class="admin-page-subtitle">Monitor logistics and maintain the instrument inventory.</p>
+        </div>
                 <?php if ($tab === 'orders'): ?>
                     <div class="admin-section-box card-shimmer">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
@@ -181,9 +180,7 @@ include '../includes/header.php';
                         </div>
                     </div>
                 <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</section>
+    </main>
+</div>
 
 <?php include '../includes/footer.php'; ?>

@@ -13,7 +13,7 @@ $errors = [];
 
 // Check if already logged in
 if (isLoggedIn()) {
-    redirect('customer/dashboard.php');
+    redirect('index.php');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

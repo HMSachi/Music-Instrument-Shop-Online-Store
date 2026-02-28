@@ -2,6 +2,15 @@
 if (!isset($page_title)) {
     $page_title = 'Melody Masters - Music Instrument Shop';
 }
+
+$is_admin_route = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERVER['PHP_SELF'], '/staff/') !== false);
+if ($is_admin_route) {
+    if (!isset($body_class)) {
+        $body_class = 'admin-mode';
+    } else {
+        $body_class .= ' admin-mode';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,15 +21,18 @@ if (!isset($page_title)) {
     <meta name="csrf-token" content="<?php echo generateCsrfToken(); ?>">
     
     <!-- Modern Styles -->
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/modern-theme.css">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/modern-theme.css?v=<?php echo time(); ?>">
+    <?php if ($is_admin_route ?? false): ?>
+    <link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/admin-theme.css?v=<?php echo time(); ?>">
+    <?php endif; ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script>
         const SITE_URL = '<?php echo SITE_URL; ?>';
     </script>
 </head>
-<body>
+<body class="<?php echo isset($body_class) ? htmlspecialchars($body_class) : ''; ?>">
     <header class="main-header">
         <div class="container">
             <div class="header-content">
@@ -75,27 +87,47 @@ if (!isset($page_title)) {
     </header>
     
     <main class="main-content">
-        <div class="container flash-messages">
+        <!-- Floating Toasts -->
+        <style>
+            .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+            .toast-message { pointer-events: auto; background: var(--bg-card); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 16px 24px; display: flex; align-items: center; gap: 12px; font-weight: 500; transform: translateX(120%); animation: slideInX 0.4s forwards; border-left: 4px solid #ccc; background-color: rgba(255,255,255,0.95); }
+            .toast-message.success { border-color: var(--success); color: var(--success); }
+            .toast-message.error { border-color: var(--error); color: var(--error); }
+            .toast-message.info { border-color: var(--info); color: var(--info); }
+            @keyframes slideInX { 80% { transform: translateX(-15px); } 100% { transform: translateX(0); } }
+            @keyframes slideOutFade { to { transform: translateY(-20px); opacity: 0; } }
+            .toast-hide { animation: slideOutFade 0.4s forwards; }
+            body.admin-mode .toast-message { background: var(--admin-bg-surface); color: white; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid var(--admin-border); border-left-width: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        </style>
+        <div class="toast-container" id="toastBox">
             <?php
             $success_msg = getFlashMessage('success');
             $error_msg = getFlashMessage('error');
             $info_msg = getFlashMessage('info');
             
             if ($success_msg): ?>
-                <div class="alert alert-success">
+                <div class="toast-message success">
                     <i class="fas fa-check-circle"></i> <?php echo $success_msg; ?>
                 </div>
             <?php endif; ?>
 
             <?php if ($error_msg): ?>
-                <div class="alert alert-error">
+                <div class="toast-message error">
                     <i class="fas fa-exclamation-circle"></i> <?php echo $error_msg; ?>
                 </div>
             <?php endif; ?>
 
             <?php if ($info_msg): ?>
-                <div class="alert alert-info">
+                <div class="toast-message info">
                     <i class="fas fa-info-circle"></i> <?php echo $info_msg; ?>
                 </div>
             <?php endif; ?>
         </div>
+        <script>
+            setTimeout(() => {
+                document.querySelectorAll('.toast-message').forEach(el => {
+                    el.classList.add('toast-hide');
+                    setTimeout(() => el.remove(), 400);
+                });
+            }, 5000);
+        </script>

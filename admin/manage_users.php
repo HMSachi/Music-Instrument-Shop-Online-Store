@@ -58,36 +58,46 @@ $page_title = 'Manage Users - Admin';
 include '../includes/header.php';
 ?>
 
-<section class="admin-section">
-    <div class="container">
-        <div style="margin-bottom: 4rem;">
-            <h1 class="text-gold">User Registry</h1>
-            <p style="color: var(--text-muted);">Monitor and manage access levels for the Melody Masters community.</p>
+<!-- Admin Redesign Wrapper -->
+<div class="admin-wrapper slide-up-fade">
+    <!-- Floating Glass Sidebar -->
+    <aside class="admin-sidebar-glass">
+        <div class="admin-profile-badge">
+            <div class="admin-avatar">
+                <?php echo strtoupper(substr($_SESSION['full_name'] ?? 'A', 0, 1)); ?>
+            </div>
+            <h4>Site Administrator</h4>
+            <div style="color: var(--admin-primary); font-size: 0.8rem; margin-top: 0.25rem;">Super Admin</div>
         </div>
         
-        <div class="admin-layout animate-fade-in">
-            <!-- Sidebar -->
-            <aside class="admin-sidebar">
-                <div class="glass-card card-shimmer" style="padding: 2.5rem; position: sticky; top: 100px;">
-                    <nav class="dashboard-nav">
-                        <a href="dashboard.php">
-                            <i class="fas fa-chart-line"></i> Analytics Overview
-                        </a>
-                        <a href="manage_products.php">
-                            <i class="fas fa-guitar"></i> Instrument Inventory
-                        </a>
-                        <a href="manage_users.php" class="active">
-                            <i class="fas fa-user-friends"></i> User Base
-                        </a>
-                        <a href="manage_orders.php">
-                            <i class="fas fa-receipt"></i> Order Management
-                        </a>
-                    </nav>
-                </div>
-            </aside>
+        <nav class="admin-nav-menu">
+            <a href="dashboard.php" class="admin-nav-item">
+                <i class="fas fa-satellite-dish"></i> Command Center
+            </a>
+            <a href="manage_products.php" class="admin-nav-item">
+                <i class="fas fa-guitar"></i> Instrument Vault
+            </a>
+            <a href="manage_users.php" class="admin-nav-item active">
+                <i class="fas fa-users-cog"></i> User Base
+            </a>
+            <a href="manage_orders.php" class="admin-nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Global Ledgers
+            </a>
             
-            <!-- Content -->
-            <div class="admin-content">
+            <div class="admin-nav-divider"></div>
+            
+            <a href="<?php echo SITE_URL; ?>/index.php" class="admin-nav-item" style="color: var(--admin-primary);">
+                <i class="fas fa-external-link-alt"></i> Storefront
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main-content">
+        <div class="admin-page-header">
+            <h1 class="admin-page-title">User Registry</h1>
+            <p class="admin-page-subtitle">Monitor and manage access levels for the Melody Masters community.</p>
+        </div>
                 <div class="admin-section-box card-shimmer">
                     <h2 style="margin-bottom: 2.5rem;">Verified Membership</h2>
                     
@@ -163,9 +173,7 @@ include '../includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
+    </main>
+</div>
 
 <?php include '../includes/footer.php'; ?>

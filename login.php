@@ -17,7 +17,7 @@ if (isLoggedIn()) {
     } elseif (isStaff()) {
         redirect('staff/dashboard.php');
     } else {
-        redirect('customer/dashboard.php');
+        redirect('index.php');
     }
 }
 
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif ($user['role'] === 'staff') {
                     redirect('staff/dashboard.php');
                 } else {
-                    redirect('customer/dashboard.php');
+                    redirect('index.php');
                 }
             } else {
                 $error = 'Invalid email or password';

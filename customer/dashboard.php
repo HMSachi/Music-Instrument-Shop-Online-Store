@@ -155,9 +155,14 @@ include '../includes/header.php';
                                             <span style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">
                                                 <?php echo date('M d, Y', strtotime($order['order_date'])); ?>
                                             </span>
-                                            <span class="badge badge-<?php echo strtolower($order['order_status']); ?>">
+                                            <span class="badge badge-<?php echo strtolower($order['order_status']); ?>" style="margin-bottom: 0.25rem; display: inline-block;">
                                                 <?php echo $order['order_status']; ?>
                                             </span>
+                                            <?php if (!empty($order['tracking_number'])): ?>
+                                            <span style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                                                <i class="fas fa-truck" style="margin-right: 0.25rem;"></i> Trk: <?php echo htmlspecialchars($order['tracking_number']); ?>
+                                            </span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     

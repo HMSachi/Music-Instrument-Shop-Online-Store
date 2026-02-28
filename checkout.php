@@ -72,10 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
                 }
 
                 // Create order
-                $order_sql = "INSERT INTO orders (user_id, total_amount, shipping_cost, order_status) 
-                              VALUES (?, ?, ?, 'Processing')";
+                $order_sql = "INSERT INTO orders (user_id, total_amount, shipping_address, payment_method, shipping_cost, order_status) 
+                              VALUES (?, ?, ?, ?, ?, 'Processing')";
                 
-                $order_id = preparedQuery($conn, $order_sql, [$user_id, $total, $shipping_cost], "idd");
+                $order_id = preparedQuery($conn, $order_sql, [$user_id, $total, $shipping_address, $payment_method, $shipping_cost], "idssd");
                 
                 if ($order_id) {
                     // Insert order items
