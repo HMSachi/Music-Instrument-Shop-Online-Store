@@ -24,29 +24,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $price = (float)$_POST['price'];
         $stock = (int)$_POST['stock'];
         $product_type = $_POST['product_type'];
-        $image = sanitizeInput($_POST['image']);
         
-        $sql = "INSERT INTO products (product_name, brand, category_id, description, price, stock, product_type, image) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $image = 'assets/images/placeholder.jpg'; // default
+        if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../assets/images/uploads/';
+            if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
+            $filename = time() . '_' . basename($_FILES['product_image']['name']);
+            $target_file = $upload_dir . $filename;
+            
+            $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+            
+            // Strict MIME type validation
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $_FILES['product_image']['tmp_name']);
+            finfo_close($finfo);
+            
+            $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            
+            if (in_array($file_type, ['jpg', 'jpeg', 'png', 'webp', 'gif']) && in_array($mime_type, $allowed_mimes)) {
+                // Secondary check using getimagesize to ensure it's a real image
+                if (getimagesize($_FILES['product_image']['tmp_name']) !== false) {
+                    if (move_uploaded_file($_FILES['product_image']['tmp_name'], $target_file)) {
+                        $image = 'assets/images/uploads/' . $filename;
+                    } else {
+                        $error = 'Failed to upload image.';
+                    }
+                } else {
+                    $error = 'File is not a valid image.';
+                }
+            } else {
+                $error = 'Invalid image format. Supported formats: JPG, PNG, WEBP, GIF.';
+            }
+        }
         
-        $params = [$product_name, $brand, $category_id, $description, $price, $stock, $product_type, $image];
-        $types = "ssisdiss";
-        
-        if (preparedQuery($conn, $sql, $params, $types)) {
-            $message = 'Product added successfully!';
-        } else {
-            $error = 'Failed to add product.';
+        if (!$error) {
+            $sql = "INSERT INTO products (product_name, brand, category_id, description, price, stock, product_type, image) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $params = [$product_name, $brand, $category_id, $description, $price, $stock, $product_type, $image];
+            $types = "ssisdiss";
+            
+            if (preparedQuery($conn, $sql, $params, $types)) {
+                $message = 'Product added successfully!';
+            } else {
+                $error = 'Failed to add product.';
+            }
         }
     }
     
     if (isset($_POST['delete_product'])) {
         $product_id = (int)$_POST['product_id'];
-        $sql = "DELETE FROM products WHERE product_id = ?";
         
-        if (preparedQuery($conn, $sql, [$product_id], "i")) {
-            $message = 'Product deleted successfully!';
+        // Check if there are orders for this product
+        $check_orders = preparedQuery($conn, "SELECT COUNT(*) as count FROM order_items WHERE product_id = ?", [$product_id], "i");
+        $has_orders = $check_orders->fetch_assoc()['count'] > 0;
+        
+        if ($has_orders) {
+            $error = 'Cannot delete product because it exists in customer orders. Consider setting stock to 0 instead.';
         } else {
-            $error = 'Failed to delete product';
+            $sql = "DELETE FROM products WHERE product_id = ?";
+            if (preparedQuery($conn, $sql, [$product_id], "i")) {
+                $message = 'Product deleted successfully!';
+            } else {
+                $error = 'Failed to delete product.';
+            }
         }
     }
 
@@ -59,26 +100,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $price = (float)$_POST['price'];
         $stock = (int)$_POST['stock'];
         $product_type = $_POST['product_type'];
-        $image = sanitizeInput($_POST['image']);
+        $existing_image = sanitizeInput($_POST['existing_image']);
         
-        $sql = "UPDATE products SET 
-                product_name = ?, 
-                brand = ?, 
-                category_id = ?, 
-                description = ?, 
-                price = ?, 
-                stock = ?, 
-                product_type = ?, 
-                image = ? 
-                WHERE product_id = ?";
+        $image = $existing_image;
+        if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../assets/images/uploads/';
+            if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
+            $filename = time() . '_' . basename($_FILES['product_image']['name']);
+            $target_file = $upload_dir . $filename;
+            
+            $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+            
+            // Strict MIME type validation
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $_FILES['product_image']['tmp_name']);
+            finfo_close($finfo);
+            
+            $allowed_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            
+            if (in_array($file_type, ['jpg', 'jpeg', 'png', 'webp', 'gif']) && in_array($mime_type, $allowed_mimes)) {
+                // Secondary check using getimagesize
+                if (getimagesize($_FILES['product_image']['tmp_name']) !== false) {
+                    if (move_uploaded_file($_FILES['product_image']['tmp_name'], $target_file)) {
+                        $image = 'assets/images/uploads/' . $filename;
+                    } else {
+                        $error = 'Failed to upload new image. Keeping existing image.';
+                    }
+                } else {
+                    $error = 'File is not a valid image. Keeping existing image.';
+                }
+            } else {
+                $error = 'Invalid image format. Keeping existing image.';
+            }
+        }
         
-        $params = [$product_name, $brand, $category_id, $description, $price, $stock, $product_type, $image, $product_id];
-        $types = "ssisdissi";
-        
-        if (preparedQuery($conn, $sql, $params, $types)) {
-            $message = 'Product updated successfully!';
-        } else {
-            $error = 'Failed to update product.';
+        if (!$error || strpos($error, 'Failed to update product') === false) {
+            $sql = "UPDATE products SET 
+                    product_name = ?, 
+                    brand = ?, 
+                    category_id = ?, 
+                    description = ?, 
+                    price = ?, 
+                    stock = ?, 
+                    product_type = ?, 
+                    image = ? 
+                    WHERE product_id = ?";
+            
+            $params = [$product_name, $brand, $category_id, $description, $price, $stock, $product_type, $image, $product_id];
+            $types = "ssisdissi";
+            
+            if (preparedQuery($conn, $sql, $params, $types)) {
+                $message = 'Product updated successfully!';
+            } else {
+                $error = 'Failed to update product.';
+            }
         }
     }
 }
@@ -105,36 +180,46 @@ $page_title = 'Manage Products - Admin';
 include '../includes/header.php';
 ?>
 
-<section class="admin-section">
-    <div class="container">
-        <div style="margin-bottom: 4rem;">
-            <h1 class="text-gold">Inventory Management</h1>
-            <p style="color: var(--text-muted);">Configure and manage your premium instrument collection.</p>
+<!-- Admin Redesign Wrapper -->
+<div class="admin-wrapper slide-up-fade">
+    <!-- Floating Glass Sidebar -->
+    <aside class="admin-sidebar-glass">
+        <div class="admin-profile-badge">
+            <div class="admin-avatar">
+                <?php echo strtoupper(substr($_SESSION['full_name'] ?? 'A', 0, 1)); ?>
+            </div>
+            <h4>Site Administrator</h4>
+            <div style="color: var(--admin-primary); font-size: 0.8rem; margin-top: 0.25rem;">Super Admin</div>
         </div>
         
-        <div class="admin-layout animate-fade-in">
-            <!-- Sidebar -->
-            <aside class="admin-sidebar">
-                <div class="glass-card card-shimmer" style="padding: 2.5rem; position: sticky; top: 100px;">
-                    <nav class="dashboard-nav">
-                        <a href="dashboard.php">
-                            <i class="fas fa-chart-line"></i> Analytics Overview
-                        </a>
-                        <a href="manage_products.php" class="active">
-                            <i class="fas fa-guitar"></i> Instrument Inventory
-                        </a>
-                        <a href="manage_users.php">
-                            <i class="fas fa-user-friends"></i> User Base
-                        </a>
-                        <a href="manage_orders.php">
-                            <i class="fas fa-receipt"></i> Order Management
-                        </a>
-                    </nav>
-                </div>
-            </aside>
+        <nav class="admin-nav-menu">
+            <a href="dashboard.php" class="admin-nav-item">
+                <i class="fas fa-satellite-dish"></i> Command Center
+            </a>
+            <a href="manage_products.php" class="admin-nav-item active">
+                <i class="fas fa-guitar"></i> Instrument Vault
+            </a>
+            <a href="manage_users.php" class="admin-nav-item">
+                <i class="fas fa-users-cog"></i> User Base
+            </a>
+            <a href="manage_orders.php" class="admin-nav-item">
+                <i class="fas fa-file-invoice-dollar"></i> Global Ledgers
+            </a>
             
-            <!-- Content -->
-            <div class="admin-content">
+            <div class="admin-nav-divider"></div>
+            
+            <a href="<?php echo SITE_URL; ?>/index.php" class="admin-nav-item" style="color: var(--admin-primary);">
+                <i class="fas fa-external-link-alt"></i> Storefront
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="admin-main-content">
+        <div class="admin-page-header">
+            <h1 class="admin-page-title">Inventory Management</h1>
+            <p class="admin-page-subtitle">Configure and manage your premium instrument collection.</p>
+        </div>
                 <!-- Product Form (Add/Edit) -->
                 <div class="admin-section-box card-shimmer" style="margin-bottom: 3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
@@ -144,7 +229,7 @@ include '../includes/header.php';
                         <?php endif; ?>
                     </div>
                     
-                    <form method="POST" action="" class="admin-form">
+                    <form method="POST" action="" class="admin-form" enctype="multipart/form-data">
                         <?php echo csrfInput(); ?>
                         <?php if ($edit_product): ?>
                             <input type="hidden" name="product_id" value="<?php echo $edit_product['product_id']; ?>">
@@ -205,22 +290,33 @@ include '../includes/header.php';
                         </div>
                         
                         <div class="form-group">
-                            <label for="image">Visual Asset Path</label>
+                            <label for="product_image">Visual Asset (Upload New)</label>
                             <div style="display: flex; gap: 2rem; align-items: flex-start;">
                                 <div style="flex: 1;">
-                                    <input type="text" id="image" name="image" value="<?php echo $edit_product ? htmlspecialchars($edit_product['image']) : ''; ?>" placeholder="assets/images/product.jpg" oninput="updateImagePreview(this.value)">
-                                    <div class="asset-suggestion-list">
-                                        <span class="asset-tag" onclick="document.getElementById('image').value='assets/images/Digital Piano 88 Keys.jpg'; updateImagePreview('assets/images/Digital Piano 88 Keys.jpg')">Piano</span>
-                                        <span class="asset-tag" onclick="document.getElementById('image').value='assets/images/Drum Kit 5-Piece.jpg'; updateImagePreview('assets/images/Drum Kit 5-Piece.jpg')">Drums</span>
-                                        <span class="asset-tag" onclick="document.getElementById('image').value='assets/images/Sepina.jpg'; updateImagePreview('assets/images/Sepina.jpg')">Sepina</span>
-                                        <span class="asset-tag" onclick="document.getElementById('image').value='assets/images/Theory Course (Digital).jpg'; updateImagePreview('assets/images/Theory Course (Digital).jpg')">Theory</span>
-                                    </div>
+                                    <?php if ($edit_product): ?>
+                                        <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($edit_product['image']); ?>">
+                                    <?php endif; ?>
+                                    <input type="file" id="product_image" name="product_image" accept="image/*" class="form-control" onchange="previewUpload(event)" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px;">
+                                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">Upload a new image to override existing assets. (JPG, PNG, WEBP)</p>
                                 </div>
-                                <div class="image-preview-container" style="margin: 0;">
-                                    <img id="image-preview" src="<?php echo SITE_URL; ?>/<?php echo $edit_product ? ($edit_product['image'] ?: 'assets/images/placeholder.jpg') : 'assets/images/placeholder.jpg'; ?>" alt="Preview">
+                                <div class="image-preview-container" style="margin: 0; background: rgba(0,0,0,0.2);">
+                                    <img id="image-preview" src="<?php echo SITE_URL; ?>/<?php echo $edit_product ? ($edit_product['image'] ?: 'assets/images/placeholder.jpg') : 'assets/images/placeholder.jpg'; ?>" alt="Preview" style="object-fit: contain;">
                                 </div>
                             </div>
                         </div>
+                        
+                        <script>
+                            function previewUpload(event) {
+                                const file = event.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        document.getElementById('image-preview').src = e.target.result;
+                                    }
+                                    reader.readAsDataURL(file);
+                                }
+                            }
+                        </script>
                         
                         <div style="margin-top: 3rem; pt: 2rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem;">
                             <?php if ($edit_product): ?>
@@ -313,9 +409,7 @@ include '../includes/header.php';
                         </div>
                     <?php endif; ?>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
+    </main>
+</div>
 
 <?php include '../includes/footer.php'; ?>

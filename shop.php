@@ -37,6 +37,10 @@ $search = isset($_GET['search']) ? sanitizeInput($_GET['search']) : '';
 $brand = isset($_GET['brand']) ? sanitizeInput($_GET['brand']) : '';
 $min_price = isset($_GET['min_price']) && $_GET['min_price'] !== '' ? (float)$_GET['min_price'] : null;
 $max_price = isset($_GET['max_price']) && $_GET['max_price'] !== '' ? (float)$_GET['max_price'] : null;
+$sort = isset($_GET['sort']) ? sanitizeInput($_GET['sort']) : 'newest';
+$page = isset($_GET['page']) && (int)$_GET['page'] > 0 ? (int)$_GET['page'] : 1;
+$limit = 9;
+$offset = ($page - 1) * $limit;
 
 // Build dynamic query with prepared statements
 $where = [];
@@ -74,10 +78,28 @@ if ($max_price !== null) {
 
 $where_clause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
 
+// Count total items for pagination
+$count_sql = "SELECT COUNT(*) as total FROM products p " . $where_clause;
+$count_result = preparedQuery($conn, $count_sql, $params, $types);
+$total_products = $count_result->fetch_assoc()['total'];
+$total_pages = ceil($total_products / $limit);
+
+// Sorting logic
+$order_by = "ORDER BY p.created_at DESC";
+if ($sort === 'price_asc') {
+    $order_by = "ORDER BY p.price ASC";
+} elseif ($sort === 'price_desc') {
+    $order_by = "ORDER BY p.price DESC";
+} elseif ($sort === 'name_asc') {
+    $order_by = "ORDER BY p.product_name ASC";
+}
+
+// Ensure params handle LIMIT appropriately by just concatenating because they are integers safely casted above
 $products_sql = "SELECT p.*, c.category_name FROM products p 
                  LEFT JOIN categories c ON p.category_id = c.category_id 
                  $where_clause
-                 ORDER BY p.created_at DESC";
+                 $order_by 
+                 LIMIT $limit OFFSET $offset";
 
 $products = preparedQuery($conn, $products_sql, $params, $types);
 
@@ -174,28 +196,46 @@ include 'includes/header.php';
             <!-- Products Grid -->
             <div class="shop-content">
                 <?php if ($products && $products->num_rows > 0): ?>
-                    <div class="products-count" style="margin-bottom: 2rem; color: var(--text-muted);">
-                        <p>Showing <?php echo $products->num_rows; ?> instruments</p>
+                    <div class="products-count" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; color: var(--text-muted);">
+                        <p>Showing <?php echo $products->num_rows; ?> of <?php echo $total_products; ?> instruments</p>
+                        
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <label for="sortSelector" style="font-size: 0.9rem;">Sort by</label>
+                            <form method="GET" action="" style="margin: 0;">
+                                <?php if ($category_id): ?><input type="hidden" name="category" value="<?php echo $category_id; ?>"><?php endif; ?>
+                                <?php if ($search): ?><input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>"><?php endif; ?>
+                                <?php if ($brand): ?><input type="hidden" name="brand" value="<?php echo htmlspecialchars($brand); ?>"><?php endif; ?>
+                                <?php if ($min_price): ?><input type="hidden" name="min_price" value="<?php echo $min_price; ?>"><?php endif; ?>
+                                <?php if ($max_price): ?><input type="hidden" name="max_price" value="<?php echo $max_price; ?>"><?php endif; ?>
+                                
+                                <select name="sort" id="sortSelector"onchange="this.form.submit()" class="form-control" style="background: rgba(255,255,255,0.03); border-color: var(--border-color); color: var(--text-main); font-size: 0.9rem; padding: 0.4rem 2rem 0.4rem 1rem;">
+                                    <option value="newest" <?php echo $sort === 'newest' ? 'selected' : ''; ?>>Newest Arrivals</option>
+                                    <option value="price_asc" <?php echo $sort === 'price_asc' ? 'selected' : ''; ?>>Price: Low to High</option>
+                                    <option value="price_desc" <?php echo $sort === 'price_desc' ? 'selected' : ''; ?>>Price: High to Low</option>
+                                    <option value="name_asc" <?php echo $sort === 'name_asc' ? 'selected' : ''; ?>>Name: A to Z</option>
+                                </select>
+                            </form>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-3" style="gap: 1.5rem;">
                         <?php while ($product = $products->fetch_assoc()): ?>
-                            <div class="glass-card product-card card-shimmer" style="padding: 1.25rem;">
-                                <div class="product-image" style="height: 200px; overflow: hidden; border-radius: var(--radius-md); margin-bottom: 1.25rem; background: #f0f0f0; position: relative;">
-                                    <a href="product.php?id=<?php echo $product['product_id']; ?>">
-                                        <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
-                                             alt="<?php echo htmlspecialchars($product['product_name']); ?>"
-                                             style="width: 100%; height: 100%; object-fit: cover;"
-                                             onerror="this.src='assets/images/placeholder.jpg';">
-                                    </a>
-                                </div>
-                                <div class="product-info">
-                                    <p style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;"><?php echo htmlspecialchars($product['category_name']); ?></p>
-                                    <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">
-                                        <a href="product.php?id=<?php echo $product['product_id']; ?>" style="color: var(--text-main);"><?php echo htmlspecialchars($product['product_name']); ?></a>
+                            <div class="product-card-premium card-shimmer" style="display: flex; flex-direction: column;">
+                                <a href="product.php?id=<?php echo $product['product_id']; ?>" class="image-wrap hover-zoom" style="height: 200px;">
+                                    <img src="<?php echo rtrim(SITE_URL, '/') . '/' . ($product['image'] ? ltrim($product['image'], '/') : 'assets/images/placeholder.jpg'); ?>" 
+                                         alt="<?php echo htmlspecialchars($product['product_name']); ?>"
+                                         onerror="this.src='assets/images/placeholder.jpg';">
+                                </a>
+                                <div class="product-info" style="flex: 1; display: flex; flex-direction: column; padding: 1.5rem;">
+                                    <span style="color: var(--primary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; display: block;">
+                                        <?php echo htmlspecialchars($product['category_name']); ?>
+                                    </span>
+                                    <h4 style="font-size: 1.15rem; margin-bottom: 0.25rem;">
+                                        <a href="product.php?id=<?php echo $product['product_id']; ?>"><?php echo htmlspecialchars($product['product_name']); ?></a>
                                     </h4>
-                                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;"><?php echo htmlspecialchars($product['brand']); ?></p>
-                                    <div class="item-footer">
+                                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;"><?php echo htmlspecialchars($product['brand']); ?></p>
+                                    
+                                    <div class="item-footer" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: auto;">
                                         <span class="price"><?php echo formatPrice($product['price']); ?></span>
                                         <div style="display: flex; gap: 0.4rem; align-items: center;">
                                             <?php if ($product['stock'] > 0): ?>
@@ -216,6 +256,31 @@ include 'includes/header.php';
                             </div>
                         <?php endwhile; ?>
                     </div>
+                    
+                    <?php if ($total_pages > 1): ?>
+                        <?php
+                        // Build query string ensuring persistence when clicking a page link
+                        $qp = $_GET;
+                        unset($qp['page']);
+                        $query_string = http_build_query($qp);
+                        $query_string = !empty($query_string) ? '&' . $query_string : '';
+                        ?>
+                        <div class="pagination" style="margin-top: 4rem; display: flex; justify-content: center; gap: 0.5rem;">
+                            <?php if ($page > 1): ?>
+                                <a href="?page=<?php echo ($page - 1) . $query_string; ?>" class="btn btn-secondary" style="padding: 0.5rem 1rem;"><i class="fas fa-chevron-left"></i></a>
+                            <?php endif; ?>
+                            
+                            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                <a href="?page=<?php echo $i . $query_string; ?>" class="btn <?php echo $page === $i ? 'btn-primary' : 'btn-secondary'; ?>" style="padding: 0.5rem 1rem; min-width: 40px; text-align: center;">
+                                    <?php echo $i; ?>
+                                </a>
+                            <?php endfor; ?>
+                            
+                            <?php if ($page < $total_pages): ?>
+                                <a href="?page=<?php echo ($page + 1) . $query_string; ?>" class="btn btn-secondary" style="padding: 0.5rem 1rem;"><i class="fas fa-chevron-right"></i></a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="glass-card text-center" style="padding: 4rem;">
                         <i class="fas fa-box-open" style="font-size: 4rem; color: var(--border-color); margin-bottom: 2rem;"></i>

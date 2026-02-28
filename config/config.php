@@ -10,13 +10,10 @@ define('SITE_NAME', 'Melody Masters');
 if (!isset($_ENV['SITE_URL'])) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? 0) == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
-    $path = str_replace(basename($script_name), '', $script_name);
-    $path = trim($path, '/');
-    $path = $path ? '/' . $path : '';
     
-    // Fallback for localhost development with subfolders
-    if ($host === 'localhost' && strpos($path, 'Music-Instrument-Shop-Online-Store') === false) {
+    // Default path base
+    $path = '';
+    if ($host === 'localhost' || $host === '127.0.0.1') {
         $path = '/Music-Instrument-Shop-Online-Store';
     }
     
